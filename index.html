@@ -125,7 +125,7 @@
   <div class="panel">
     <div class="eyebrow">Гра за ідеєю Кості · частина 1</div>
     <h1>Escape Oceanic Terraria</h1>
-    <p>Ти прокинувся на безлюдному острові посеред океану. Голий. Тільки пікселі рятують. Поший одяг, знайди воду і їжу, збери пліт і втечи.</p>
+    <p>Ти прокинувся на безлюдному острові посеред океану. Голий, і сонце пече. Спершу прикрий тіло листям, знайди воду і їжу, збери пліт і втечи.</p>
     <div class="keys">
       <em>👆 тап</em><span>тапни, куди йти — чоловічок піде туди (або стрілки / WASD)</span>
       <em>🌴</em><span>тапни пальму — вибери: потрясти, зірвати листок або зрубати</span>
@@ -266,7 +266,7 @@ function clampFocus(){const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(
 const dressed=()=>st.cloth>=NEED_CLOTH;
 
 const QUESTS=[
-  {title:'Поший одяг',done:()=>dressed(),hint:()=>`Ти голий. Тапни пальму → «Зірвати листок». Листок упаде — тапни його на землі → «Додати до одягу». Треба ${st.cloth}/${NEED_CLOTH}.`},
+  {title:'Прикрий тіло',done:()=>dressed(),hint:()=>`Ти голий — сонце пече. Тапни пальму → «Зірвати листок»; листок упаде — тапни його → «Додати до одягу». З ${NEED_CLOTH} листків з'являться футболка і труси. Треба ${st.cloth}/${NEED_CLOTH}.`},
   {title:'Напийся і поїж',done:()=>st.ate>0&&st.drank>0,hint:()=>'Тапни струмок 💧, щоб напитися. Тряси пальму — кокос упаде, тапни його → «З’їсти» 🥥. Не дай шкалам впасти до нуля.'},
   {title:'Знайди сокиру',done:()=>st.hasAxe,hint:()=>'Сокира 🪓 десь захована на острові. Погуляй і знайди її — без неї пальму не зрубати.'},
   {title:'Збери дерево і мотузку',done:()=>invested.wood+inv.wood>=NEED_WOOD&&invested.fiber+inv.fiber>=NEED_FIBER,hint:()=>`Тапни пальму → «Зрубати». Візьми дерево ${Math.min(NEED_WOOD,invested.wood+inv.wood)}/${NEED_WOOD}, а з листя (коли одягнений) скрути мотузку ${Math.min(NEED_FIBER,invested.fiber+inv.fiber)}/${NEED_FIBER}.`},
@@ -327,9 +327,9 @@ function blockedAt(px,py){const tx=Math.floor(px/T),ty=Math.floor(py/T);if(tx<0|
 function canStand(x,y){const r=8;return !(blockedAt(x-r,y-3)||blockedAt(x+r,y-3)||blockedAt(x-r,y+7)||blockedAt(x+r,y+7));}
 function clearTask(){player.mtx=player.mty=null;player.taskPalm=null;player.taskDrop=null;player.taskSite=false;player.taskAxe=false;player.taskDrink=false;player.taskAction=null;}
 function spawnDrop(kind,x,y){
-  // find a nearby standable spot so drops don't land on water/obstacles
-  for(let tries=0;tries<12;tries++){const ox=x+rand(-14,14),oy=y+rand(2,20);if(canStand(ox,oy)){drops.push({kind,x:ox,y:oy,born:st.time});return;}}
-  drops.push({kind,x,y:y+8,born:st.time});
+  // scatter around the base in a ring (far enough not to overlap the tree tap-zone), on standable ground
+  for(let tries=0;tries<18;tries++){const ang=rand(0,Math.PI*2),r=rand(20,36);const ox=x+Math.cos(ang)*r,oy=y+10+Math.sin(ang)*r*0.55;if(canStand(ox,oy)){drops.push({kind,x:ox,y:oy,born:st.time});return;}}
+  drops.push({kind,x,y:y+12,born:st.time});
 }
 function shakePalm(p){p.shake=1;spawnDrop('coconut',p.px,p.py-4);sfx('harvest');floats.push({x:p.px,y:p.py-40,s:'🥥 впав кокос',t:0});}
 function pluckLeaf(p){p.shake=.6;spawnDrop('leaf',p.px,p.py-4);sfx('harvest');floats.push({x:p.px,y:p.py-40,s:'🍃 листок',t:0});}
@@ -373,7 +373,7 @@ function reset(){
   for(const p of palms){p.alive=true;p.hits=0;p.regrow=0;p.shake=0;}
   if(axe)axe.taken=false;drops.length=0;floats.length=0;seen.fill(0);ui.quest='';ui.hint='';marker.t=9;freeCam=false;focus.x=spawn.x;focus.y=spawn.y;
   $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('menu').hidden=true;
-  toast('Ти на острові. Знайди воду і поший одяг',3.5);
+  toast('Ти голий. Зірви листя і прикрий тіло, знайди воду',3.5);
 }
 function win(){st.won=true;st.running=false;sfx('win');$('winTime').textContent=fmtTime(st.time);$('win').hidden=false;}
 
@@ -498,7 +498,8 @@ function drawPlayer(tsec){
   R(2,14+(f>0?1:0),3,6-(f>0?1:0),'#e8b98a');R(5,14+(f<0?1:0),3,6-(f<0?1:0),'#e8b98a');R(2,19,3,1,'#4a2f18');R(5,19,3,1,'#4a2f18');
   if(on){R(2,14,6,3,'#4c9a3f');R(2,16,1,1,'#2f6328');R(4,16,1,1,'#2f6328');R(6,16,1,1,'#2f6328');}
   else{for(let i=0;i<6;i++)for(let j=0;j<2;j++)R(2+i,14+j,1,1,(i+j)%2?'#202020':'#9aa0a6');}
-  R(2,6,6,8,'#4f9a5a');R(2,6,6,1,'#3d7d48');R(0,6+(f<0?1:0),2,7,'#e8b98a');R(8,6+(f>0?1:0),2,7,'#e8b98a');R(0,6,2,1,'#3d7d48');R(8,6,2,1,'#3d7d48');
+  const shirt=on?'#4f9a5a':'#e8b98a',collar=on?'#3d7d48':'#d79f77';
+  R(2,6,6,8,shirt);R(2,6,6,1,collar);R(0,6+(f<0?1:0),2,7,'#e8b98a');R(8,6+(f>0?1:0),2,7,'#e8b98a');R(0,6,2,1,collar);R(8,6,2,1,collar);
   R(1,0,8,2,'#c9662f');R(1,2,1,4,'#c9662f');R(8,2,1,4,'#c9662f');
   if(back){R(2,2,6,4,'#c9662f');R(2,5,6,1,'#a34f22');}else{R(2,2,6,4,'#e8b98a');R(3,3,1,1,'#3a5f9e');R(6,3,1,1,'#3a5f9e');R(4,5,2,1,'#c98a6a');}
   ctx.restore();
@@ -543,18 +544,18 @@ function tapWorld(clientX,clientY){
   if(!menuEl.hidden){closeMenu();return;}
   const rect=cvs.getBoundingClientRect();
   const wx=cam.x+(clientX-rect.left)/zoom,wy=cam.y+(clientY-rect.top)/zoom;
-  // palm?
-  let bp=null,bd=44;for(const p of palms){if(!p.alive)continue;const d=Math.hypot(p.px-wx,p.py-8-wy);if(d<bd){bd=d;bp=p;}}
+  // fallen items first — they sit near the palm base, so they take priority over the tree
+  let dp=null,dd=32;for(const d of drops){const dist=Math.hypot(d.x-wx,d.y-wy);if(dist<dd){dd=dist;dp=d;}}
+  if(dp){menuCtx={type:'drop',obj:dp};
+    const label=dp.kind==='coconut'?{a:'eat',label:'З’їсти 🥥',sub:'+ситість'}:dp.kind==='wood'?{a:'take',label:'Взяти для плота 🪵',sub:'дерево для плота'}:(dressed()?{a:'fiber',label:'Скрутити мотузку 🪢',sub:'для плота'}:{a:'cloth',label:'Додати до одягу 🍃',sub:`одяг ${st.cloth}/${NEED_CLOTH}`});
+    openMenu([label],clientX-rect.left,clientY-rect.top);return;}
+  // palm — aim at the trunk/crown, not the sandy base where items land
+  let bp=null,bd=38;for(const p of palms){if(!p.alive)continue;const d=Math.hypot(p.px-wx,p.py-22-wy);if(d<bd){bd=d;bp=p;}}
   if(bp){menuCtx={type:'palm',obj:bp};openMenu([
     {a:'shake',label:'Потрясти 🥥',sub:'упаде кокос',on:true},
     {a:'leaf',label:'Зірвати листок 🍃',sub:'упаде листок',on:true},
     {a:'chop',label:'Зрубати 🪓',sub:st.hasAxe?'6 листя, 1 дерево, 3 кокоси':'спершу знайди сокиру',on:st.hasAxe},
   ],clientX-rect.left,clientY-rect.top);return;}
-  // drop?
-  let dp=null,dd=26;for(const d of drops){const dist=Math.hypot(d.x-wx,d.y-wy);if(dist<dd){dd=dist;dp=d;}}
-  if(dp){menuCtx={type:'drop',obj:dp};
-    const label=dp.kind==='coconut'?{a:'eat',label:'З’їсти 🥥',sub:'+ситість'}:dp.kind==='wood'?{a:'take',label:'Взяти для плота 🪵',sub:'дерево для плота'}:(dressed()?{a:'fiber',label:'Скрутити мотузку 🪢',sub:'для плота'}:{a:'cloth',label:'Додати до одягу 🍃',sub:`одяг ${st.cloth}/${NEED_CLOTH}`});
-    openMenu([label],clientX-rect.left,clientY-rect.top);return;}
   clearTask();freeCam=false;
   if(axe&&!axe.taken&&Math.hypot(axe.px-wx,axe.py-wy)<34){player.taskAxe=true;player.mtx=axe.px;player.mty=axe.py+14;marker.x=axe.px;marker.y=axe.py;marker.kind='go';}
   else if(spring&&Math.hypot(spring.px-wx,spring.py-wy)<38){player.taskDrink=true;player.mtx=spring.px;player.mty=spring.py+24;marker.x=spring.px;marker.y=spring.py;marker.kind='go';}
