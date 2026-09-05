@@ -261,6 +261,8 @@ const inv={wood:0,fiber:0,axe:0};
 const invested={wood:0,fiber:0};
 const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false};
 const keys={};
+let freeCam=false;const focus={x:0,y:0};
+function clampFocus(){const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
 const dressed=()=>st.cloth>=NEED_CLOTH;
 
 const QUESTS=[
@@ -275,7 +277,7 @@ const QUESTS=[
 const cvs=$('game'),ctx=cvs.getContext('2d');
 const mmC=$('minimap'),mm=mmC.getContext('2d');
 let vw=1,vh=1,dpr=1,zoom=1,cam={x:0,y:0};
-function resize(){dpr=Math.min(window.devicePixelRatio||1,2);vw=window.innerWidth;vh=window.innerHeight;cvs.width=Math.floor(vw*dpr);cvs.height=Math.floor(vh*dpr);zoom=vw>=1200?1.7:vw>=800?1.45:1.2;}
+function resize(){dpr=Math.min(window.devicePixelRatio||1,2);vw=window.innerWidth;vh=window.innerHeight;cvs.width=Math.floor(vw*dpr);cvs.height=Math.floor(vh*dpr);cvs.style.width=vw+'px';cvs.style.height=vh+'px';zoom=vw>=1200?1.7:vw>=800?1.45:1.2;}
 window.addEventListener('resize',resize);resize();
 
 // ---------- audio ----------
@@ -369,7 +371,7 @@ function reset(){
   Object.assign(inv,{wood:0,fiber:0,axe:0});Object.assign(invested,{wood:0,fiber:0});
   Object.assign(st,{running:true,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,questIdx:0,actCd:0,hasAxe:false});
   for(const p of palms){p.alive=true;p.hits=0;p.regrow=0;p.shake=0;}
-  if(axe)axe.taken=false;drops.length=0;floats.length=0;seen.fill(0);ui.quest='';ui.hint='';marker.t=9;
+  if(axe)axe.taken=false;drops.length=0;floats.length=0;seen.fill(0);ui.quest='';ui.hint='';marker.t=9;freeCam=false;focus.x=spawn.x;focus.y=spawn.y;
   $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('menu').hidden=true;
   toast('Ти на острові. Знайди воду і поший одяг',3.5);
 }
@@ -434,7 +436,8 @@ function update(dt){
 function tileColor(t,x,y){const h=(x*7+y*13)%5;if(t===DEEP)return h===0?'#1a68a0':'#1b6fa8';if(t===SHALLOW)return h===0?'#38a0d2':'#3aa6d8';if(t===SAND)return h===0?'#e2cd8e':'#e8d59a';return h===0?'#63b043':'#6fbf4a';}
 function drawWorld(now){
   const vwz=vw/zoom,vhz=vh/zoom;
-  cam.x=player.x-vwz/2;cam.y=player.y-vhz/2; // always centre the player
+  if(!freeCam){focus.x=player.x;focus.y=player.y;}
+  cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
   ctx.setTransform(dpr*zoom,0,0,dpr*zoom,-cam.x*dpr*zoom,-cam.y*dpr*zoom);
   ctx.fillStyle='#1b6fa8';ctx.fillRect(cam.x-T,cam.y-T,vwz+2*T,vhz+2*T); // ocean beyond the map
   const x0=Math.max(0,Math.floor(cam.x/T)),y0=Math.max(0,Math.floor(cam.y/T)),x1=Math.min(W-1,Math.ceil((cam.x+vwz)/T)),y1=Math.min(H-1,Math.ceil((cam.y+vhz)/T));
@@ -530,7 +533,7 @@ function openMenu(items,sx,sy){
 menuEl.addEventListener('click',e=>{
   const b=e.target.closest('button[data-a]');if(!b||!menuCtx)return;
   if(b.disabled){toast('Сокира десь захована 🪓 — знайди її',2.4);sfx('nope');return;}
-  const a=b.dataset.a,c=menuCtx;closeMenu();clearTask();
+  const a=b.dataset.a,c=menuCtx;closeMenu();clearTask();freeCam=false;
   if(c.type==='palm'){player.taskPalm=c.obj;player.taskAction=a;player.mtx=c.obj.px;player.mty=c.obj.py+22;marker.x=c.obj.px;marker.y=c.obj.py;marker.kind=a==='chop'?'chop':'go';}
   else if(c.type==='drop'){player.taskDrop=c.obj;player.mtx=c.obj.x;player.mty=c.obj.y;marker.x=c.obj.x;marker.y=c.obj.y;marker.kind='go';}
   marker.t=0;
@@ -552,14 +555,19 @@ function tapWorld(clientX,clientY){
   if(dp){menuCtx={type:'drop',obj:dp};
     const label=dp.kind==='coconut'?{a:'eat',label:'З’їсти 🥥',sub:'+ситість'}:dp.kind==='wood'?{a:'take',label:'Взяти для плота 🪵',sub:'дерево для плота'}:(dressed()?{a:'fiber',label:'Скрутити мотузку 🪢',sub:'для плота'}:{a:'cloth',label:'Додати до одягу 🍃',sub:`одяг ${st.cloth}/${NEED_CLOTH}`});
     openMenu([label],clientX-rect.left,clientY-rect.top);return;}
-  clearTask();
+  clearTask();freeCam=false;
   if(axe&&!axe.taken&&Math.hypot(axe.px-wx,axe.py-wy)<34){player.taskAxe=true;player.mtx=axe.px;player.mty=axe.py+14;marker.x=axe.px;marker.y=axe.py;marker.kind='go';}
   else if(spring&&Math.hypot(spring.px-wx,spring.py-wy)<38){player.taskDrink=true;player.mtx=spring.px;player.mty=spring.py+24;marker.x=spring.px;marker.y=spring.py;marker.kind='go';}
   else if(Math.hypot(site.px-wx,site.py-wy)<44&&st.raft<100){player.taskSite=true;player.mtx=site.px;player.mty=site.py+18;marker.x=site.px;marker.y=site.py;marker.kind='build';}
   else{player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';}
   marker.t=0;
 }
-cvs.addEventListener('pointerdown',e=>{e.preventDefault();tapWorld(e.clientX,e.clientY);});
+let ptr=null;const TAP_SLOP=9;
+cvs.addEventListener('pointerdown',e=>{e.preventDefault();if(!menuEl.hidden){closeMenu();ptr=null;return;}ptr={id:e.pointerId,sx:e.clientX,sy:e.clientY,lx:e.clientX,ly:e.clientY,moved:false};try{cvs.setPointerCapture(e.pointerId);}catch(_){}});
+cvs.addEventListener('pointermove',e=>{if(!ptr||e.pointerId!==ptr.id)return;const dx=e.clientX-ptr.lx,dy=e.clientY-ptr.ly;ptr.lx=e.clientX;ptr.ly=e.clientY;if(!ptr.moved&&Math.hypot(e.clientX-ptr.sx,e.clientY-ptr.sy)>TAP_SLOP)ptr.moved=true;if(ptr.moved){freeCam=true;focus.x-=dx/zoom;focus.y-=dy/zoom;clampFocus();}});
+function endPtr(e){if(!ptr||e.pointerId!==ptr.id)return;const wasTap=!ptr.moved,sx=ptr.sx,sy=ptr.sy;ptr=null;if(wasTap)tapWorld(sx,sy);}
+cvs.addEventListener('pointerup',endPtr);
+cvs.addEventListener('pointercancel',e=>{if(ptr&&e.pointerId===ptr.id)ptr=null;});
 
 function startGame(){sfx('craft');reset();}
 $('playBtn').addEventListener('click',startGame);
@@ -567,7 +575,7 @@ $('winBtn').addEventListener('click',()=>{$('win').hidden=true;$('start').hidden
 $('deadBtn').addEventListener('click',startGame);
 
 // ---------- loop ----------
-genWorld();player.x=spawn.x;player.y=spawn.y;
+genWorld();player.x=spawn.x;player.y=spawn.y;focus.x=spawn.x;focus.y=spawn.y;
 let last=performance.now(),mmT=0;
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);drawWorld(now);mmT+=dt;if(mmT>.25){mmT=0;drawMinimap();}updateUI();requestAnimationFrame(frame);}
 drawMinimap();requestAnimationFrame(frame);
