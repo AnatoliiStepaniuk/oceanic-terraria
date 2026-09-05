@@ -1,0 +1,575 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Oceanic">
+<meta name="theme-color" content="#1b6fa8">
+<title>Escape Oceanic Terraria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --sea:#1b6fa8; --sea-light:#3aa6d8; --sand:#e8d59a; --sand-dark:#c9ad63;
+    --ink:#0f1c2a; --panel:#17283a; --panel-2:#22384f; --line:#3b5670;
+    --cream:#f5ecd6; --muted:#b9c6d2; --accent:#ff9a3c; --accent-dark:#b3581a;
+    --hunger:#e9a23b; --water:#37c0e8; --good:#7ed957; --leaf:#3fa64a;
+  }
+  [hidden]{display:none!important}
+  html{height:100%}
+  body{margin:0;height:100%;background:var(--sea);color:var(--cream);font-family:Rubik,"Segoe UI",system-ui,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  #game{position:fixed;inset:0;display:block;background:var(--sea)}
+  .ui{position:fixed;z-index:2;pointer-events:none}
+  .box{background:rgba(23,40,58,.88);border:3px solid var(--sand);box-shadow:0 0 0 3px var(--ink);border-radius:4px}
+  #hud{top:calc(12px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));display:flex;flex-direction:column;gap:8px}
+  .bar-row{display:flex;align-items:center;gap:8px;padding:6px 10px}
+  .bar-row svg{width:22px;height:22px;flex:none}
+  .bar-row .bar{width:128px;height:12px;background:var(--ink);border:2px solid var(--line);position:relative}
+  .bar-row .bar i{position:absolute;inset:0;width:100%;transform-origin:left;transition:transform .25s linear}
+  #foodFill{background:var(--hunger)}
+  #thirstFill{background:var(--water)}
+  .bar-row.low .bar i{animation:blink .6s steps(2) infinite}
+  @keyframes blink{50%{opacity:.35}}
+  #meta{padding:6px 10px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  #meta b{color:var(--cream);font-weight:500}
+  #quest{top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:min(520px,calc(100vw - 24px));padding:10px 14px;font-size:14px;line-height:1.4}
+  #quest .steps{display:flex;flex-direction:column;gap:4px}
+  #quest .step{display:flex;gap:8px;align-items:baseline}
+  #quest .step.done{color:var(--muted);text-decoration:line-through}
+  #quest .step.cur{color:var(--cream)}
+  #quest .step .k{font-family:"Press Start 2P",monospace;font-size:9px;color:var(--accent);flex:none;width:14px}
+  #quest .step.done .k{color:var(--good)}
+  #quest .hint{margin-top:6px;color:var(--sand);font-size:13px}
+  #mini{top:calc(12px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));padding:5px}
+  #mini canvas{display:block;width:150px;height:92px;image-rendering:pixelated}
+  #mini small{display:block;margin-top:4px;font-size:10px;color:var(--muted);text-align:center;letter-spacing:.06em;text-transform:uppercase}
+  #bottom{left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px}
+  #hint{padding:6px 12px;font-size:14px;background:rgba(15,28,42,.8);border-radius:4px;min-height:20px;text-align:center;max-width:calc(100vw - 24px)}
+  #hint.toast{color:var(--good);border:2px solid var(--good)}
+  #inv{display:flex;gap:6px;padding:6px}
+  .slot{width:44px;height:44px;background:var(--panel-2);border:2px solid var(--line);position:relative;display:flex;align-items:center;justify-content:center;opacity:.45}
+  .slot.has{opacity:1;border-color:var(--sand-dark)}
+  .slot svg{width:28px;height:28px}
+  .slot b{position:absolute;right:2px;bottom:1px;font-size:11px;font-weight:700;color:var(--cream);text-shadow:1px 1px 0 var(--ink)}
+  .slot small{position:absolute;left:0;right:0;bottom:-15px;font-size:9px;color:var(--muted);text-align:center;white-space:nowrap}
+  /* tap context menu */
+  #menu{position:fixed;z-index:6;display:flex;flex-direction:column;gap:7px;min-width:190px;max-width:250px}
+  #menu button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:rgba(23,40,58,.97);color:var(--cream);border:2px solid var(--sand);box-shadow:0 0 0 3px var(--ink),0 8px 18px rgba(0,0,0,.4);border-radius:6px;padding:11px 14px;min-height:52px;font:inherit;cursor:pointer;text-align:left}
+  #menu button b{font-size:16px;font-weight:700}
+  #menu button span{font-size:12px;color:var(--muted)}
+  #menu button:active{transform:translateY(2px)}
+  #menu button:disabled{opacity:.55;cursor:default;border-color:var(--line)}
+  #menu button:disabled b{color:var(--muted)}
+  #menu button:disabled span{color:var(--accent)}
+  #menu button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
+  .overlay{position:fixed;inset:0;z-index:5;background:rgba(8,20,32,.8);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+  .panel{background:var(--panel);border:4px solid var(--sand);box-shadow:0 0 0 4px var(--ink),0 20px 40px rgba(0,0,0,.4);padding:26px 28px;max-width:560px;width:100%;border-radius:4px}
+  h1{font-family:"Press Start 2P",monospace;font-size:clamp(14px,3.6vw,24px);line-height:1.6;color:var(--sand);text-shadow:3px 3px 0 var(--ink);margin:0 0 6px;text-wrap:balance}
+  h2{font-family:"Press Start 2P",monospace;font-size:clamp(12px,3vw,18px);line-height:1.6;color:var(--sand);text-shadow:2px 2px 0 var(--ink);margin:0 0 12px;text-wrap:balance}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  .panel p{margin:0 0 12px;line-height:1.5;max-width:62ch}
+  .panel ul{margin:0 0 14px;padding-left:20px;line-height:1.55}
+  .keys{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px;margin:14px 0 18px;color:var(--muted)}
+  .keys em{font-style:normal;font-family:"Press Start 2P",monospace;font-size:9px;background:var(--ink);color:var(--cream);padding:5px 7px;border-radius:3px;text-align:center;line-height:1.5;white-space:nowrap}
+  .btn{font:700 16px Rubik,sans-serif;background:var(--accent);color:var(--ink);border:0;padding:12px 22px;border-radius:4px;cursor:pointer;box-shadow:0 4px 0 var(--accent-dark)}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--accent-dark)}
+  .btn:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .credit{margin-top:16px;font-size:12px;color:var(--muted)}
+  .letter{background:var(--sand);color:var(--ink);padding:16px 18px;border-radius:4px;margin:14px 0;box-shadow:0 0 0 3px var(--ink)}
+  .letter p,.letter ul{color:var(--ink)}
+  .letter b{color:#7a3c00}
+  @media (max-width:640px){
+    #quest{top:auto;bottom:calc(150px + env(safe-area-inset-bottom));font-size:13px;padding:8px 10px}
+    #mini canvas{width:96px;height:59px}
+    .bar-row .bar{width:92px}
+    .slot small{display:none}
+    .panel{padding:20px 18px}
+  }
+  @media (prefers-reduced-motion:reduce){.bar-row.low .bar i{animation:none;opacity:.7}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-burger" viewBox="0 0 8 8" shape-rendering="crispEdges"><rect x="1" y="1" width="6" height="2" fill="#e9a23b"/><rect x="2" y="0" width="4" height="1" fill="#e9a23b"/><rect x="1" y="3" width="6" height="1" fill="#6fbf4a"/><rect x="0" y="4" width="8" height="2" fill="#6b3d1e"/><rect x="1" y="6" width="6" height="2" fill="#e9a23b"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 8 8" shape-rendering="crispEdges"><rect x="3" y="0" width="2" height="1" fill="#37c0e8"/><rect x="2" y="1" width="4" height="2" fill="#37c0e8"/><rect x="1" y="3" width="6" height="3" fill="#37c0e8"/><rect x="2" y="6" width="4" height="1" fill="#2a9ec2"/><rect x="2" y="2" width="1" height="2" fill="#bff0fb"/></symbol>
+  <symbol id="i-wood" viewBox="0 0 8 8" shape-rendering="crispEdges"><rect x="0" y="2" width="8" height="4" fill="#8a5a2b"/><rect x="0" y="3" width="8" height="1" fill="#a9733a"/><rect x="6" y="2" width="2" height="4" fill="#d6a56a"/><rect x="7" y="3" width="1" height="2" fill="#8a5a2b"/></symbol>
+  <symbol id="i-rope" viewBox="0 0 8 8" shape-rendering="crispEdges"><path d="M1 1h6v2H5v2h2v2H1V5h2V3H1z" fill="#d8b56a"/><path d="M2 2h4M2 6h4" stroke="#a5843f" stroke-width="1"/></symbol>
+  <symbol id="i-cloth" viewBox="0 0 8 8" shape-rendering="crispEdges"><rect x="1" y="2" width="6" height="2" fill="#4c9a3f"/><rect x="1" y="4" width="2" height="2" fill="#3f7f35"/><rect x="5" y="4" width="2" height="2" fill="#3f7f35"/><rect x="3" y="4" width="2" height="1" fill="#3f7f35"/></symbol>
+  <symbol id="i-axe" viewBox="0 0 8 8" shape-rendering="crispEdges"><rect x="4" y="5" width="1" height="3" fill="#8a5a2b"/><rect x="5" y="6" width="1" height="2" fill="#8a5a2b"/><path d="M2 1h3v1h1v2H5v1H4V4H2z" fill="#c2c8ce"/><rect x="2" y="1" width="2" height="1" fill="#eef2f5"/></symbol>
+</defs></svg>
+
+<canvas id="game"></canvas>
+
+<div id="hud" class="ui">
+  <div id="food" class="box bar-row" aria-label="Їжа"><svg><use href="#i-burger"/></svg><div class="bar"><i id="foodFill"></i></div></div>
+  <div id="thirst" class="box bar-row" aria-label="Вода"><svg><use href="#i-drop"/></svg><div class="bar"><i id="thirstFill"></i></div></div>
+  <div id="meta" class="box"><span>Час <b id="timeLbl">0:00</b></span></div>
+</div>
+
+<div id="quest" class="ui box">
+  <div class="steps" id="steps"></div>
+  <div class="hint" id="questHint"></div>
+</div>
+
+<div id="mini" class="ui box"><canvas id="minimap" width="150" height="92"></canvas><small>Мапа острова</small></div>
+
+<div id="bottom" class="ui">
+  <div id="hint"></div>
+  <div id="inv" class="box"></div>
+</div>
+
+<div id="menu" hidden></div>
+
+<div id="start" class="overlay">
+  <div class="panel">
+    <div class="eyebrow">Гра за ідеєю Кості · частина 1</div>
+    <h1>Escape Oceanic Terraria</h1>
+    <p>Ти прокинувся на безлюдному острові посеред океану. Голий. Тільки пікселі рятують. Поший одяг, знайди воду і їжу, збери пліт і втечи.</p>
+    <div class="keys">
+      <em>👆 тап</em><span>тапни, куди йти — чоловічок піде туди (або стрілки / WASD)</span>
+      <em>🌴</em><span>тапни пальму — вибери: потрясти, зірвати листок або зрубати</span>
+      <em>🥥 🍃</em><span>кокос і листок падають на землю — тапни їх і вибери, що зробити</span>
+      <em>🪓</em><span>сокира десь захована на острові — без неї пальму не зрубати</span>
+      <em>💧</em><span>тапни струмок, щоб напитися; у море не пройти</span>
+    </div>
+    <p class="credit" style="margin:0 0 16px">Стеж за 🍔 їжею і 💧 водою. Якщо котрийсь показник впаде до нуля — Костя не виживе і доведеться почати спочатку.</p>
+    <div class="row"><button class="btn" id="playBtn">Грати</button></div>
+    <div class="credit">Правила придумав Костя. Пальма дає 6 листків, 1 деревину і 3 кокоси — як він і сказав.</div>
+  </div>
+</div>
+
+<div id="dead" class="overlay" hidden>
+  <div class="panel">
+    <div class="eyebrow" id="deadWhy">Кінець</div>
+    <h2 id="deadTitle">Костя не вижив</h2>
+    <p id="deadMsg">Стеж за їжею і водою.</p>
+    <div class="row"><button class="btn" id="deadBtn">Почати спочатку</button></div>
+  </div>
+</div>
+
+<div id="win" class="overlay" hidden>
+  <div class="panel">
+    <div class="eyebrow">Частина 1 пройдена</div>
+    <h2>Пліт готовий!</h2>
+    <p>Час: <b id="winTime">0:00</b>. Ти пошив одяг, вижив і зібрав пліт із нуля до 100&nbsp;%.</p>
+    <div class="letter">
+      <p><b>Костя,</b> це кінець частини 1. Частина 2 — плисти до Франції — ще не існує. Її ніхто не придумав. Її придумуєш ти.</p>
+      <p>Подумай і розкажи:</p>
+      <ul>
+        <li>Як пліт рухається — весла, вітрило чи пропелер?</li>
+        <li>Що може статися в морі — акули, шторм, ніч?</li>
+        <li>Скільки кокосів треба взяти в дорогу і що буде, якщо їжа закінчиться?</li>
+        <li>Що чекає на острові Франція?</li>
+      </ul>
+      <p>Запиши свою ідею голосовим — і буде частина 2.</p>
+    </div>
+    <div class="row"><button class="btn" id="winBtn">Грати ще раз</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const T = 32, W = 72, H = 44;
+const DEEP = 0, SHALLOW = 1, SAND = 2, GRASS = 3;
+const NEED_WOOD = 4, NEED_FIBER = 2, NEED_CLOTH = 3;
+const ISLANDS = [
+  { id: 1, cx: 17, cy: 22, rx: 10.5, ry: 8, s1: 0.9, s2: 2.1, grass: 0.62 },
+  { id: 3, cx: 34, cy: 12, rx: 2.6, ry: 2, s1: 0.2, s2: 1.0, grass: 0.3 },
+  { id: 4, cx: 40, cy: 31, rx: 2.2, ry: 1.8, s1: 2.6, s2: 1.4, grass: 0.3 },
+  { id: 2, cx: 62, cy: 20, rx: 7, ry: 6, s1: 1.7, s2: 0.4, grass: 0.6 },
+];
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const fmtTime=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+const $=id=>document.getElementById(id);
+const rand=(a,b)=>a+Math.random()*(b-a);
+
+// ---------- world ----------
+const tiles=new Uint8Array(W*H),isl=new Uint8Array(W*H),dist=new Float32Array(W*H),obst=new Uint8Array(W*H),seen=new Uint8Array(W*H);
+const palms=[],rocks=[],fish=[],floats=[],drops=[];
+let site,spawn,axe,spring;
+
+function genWorld(){
+  const rng=mulberry32(20260904);
+  dist.fill(9);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=y*W+x;let best=9,bid=0,bg=0;
+    for(const s of ISLANDS){
+      const dx=(x+.5-s.cx)/s.rx,dy=(y+.5-s.cy)/s.ry,a=Math.atan2(dy,dx);
+      const r=1+.15*Math.sin(3*a+s.s1)+.09*Math.sin(7*a+s.s2)+.05*Math.sin(11*a+s.s1*2);
+      const d=Math.hypot(dx,dy)/r;
+      if(d<best){best=d;bid=s.id;bg=s.grass;}
+    }
+    if(best<1&&x>0&&y>0&&x<W-1&&y<H-1){tiles[i]=best<bg?GRASS:SAND;isl[i]=bid;dist[i]=best;}
+    else tiles[i]=DEEP;
+  }
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=y*W+x;if(tiles[i]!==DEEP)continue;let near=false;
+    for(let dy=-2;dy<=2&&!near;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<W&&yy<H&&tiles[yy*W+xx]>=SAND){near=true;break;}}
+    if(near)tiles[i]=SHALLOW;
+  }
+  spawn={x:17*T+16,y:22*T+16};
+  let sx=0,sy=22;
+  for(let y=20;y<=24;y++)for(let x=W-1;x>=0;x--)if(isl[y*W+x]===1&&tiles[y*W+x]>=SAND){if(x>sx){sx=x;sy=y;}break;}
+  site={tx:sx-1,ty:sy,px:(sx-1)*T+16,py:sy*T+20};
+  const spaced=(list,x,y,gap)=>list.every(o=>Math.max(Math.abs(o.tx-x),Math.abs(o.ty-y))>=gap);
+  const nearSpawn=(x,y)=>Math.abs(x-17)<=2&&Math.abs(y-22)<=2;
+  const nearSite=(x,y)=>Math.abs(x-site.tx)<=2&&Math.abs(y-site.ty)<=2;
+  const place=(list,count,ok,gap,mk)=>{
+    const cand=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(ok(x,y,y*W+x))cand.push([x,y]);
+    for(let i=cand.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[cand[i],cand[j]]=[cand[j],cand[i]];}
+    let n=0;for(const[x,y]of cand){if(n>=count)break;if(!spaced(palms,x,y,gap)||!spaced(rocks,x,y,2)||nearSpawn(x,y)||nearSite(x,y))continue;list.push(mk(x,y));obst[y*W+x]=1;n++;}
+  };
+  const mkPalm=(x,y)=>({tx:x,ty:y,px:x*T+16,py:y*T+30,alive:true,hits:0,regrow:0,shake:0,lean:rng()*.5+.2});
+  const mkRock=(x,y)=>({tx:x,ty:y,px:x*T+16,py:y*T+28,w:10+rng()*6});
+  place(palms,12,(x,y,i)=>isl[i]===1&&tiles[i]>=SAND&&dist[i]>.42&&dist[i]<.94,3,mkPalm);
+  place(palms,6,(x,y,i)=>isl[i]===2&&tiles[i]>=SAND&&dist[i]>.3&&dist[i]<.9,3,mkPalm);
+  place(palms,2,(x,y,i)=>(isl[i]===3||isl[i]===4)&&dist[i]<.35,3,mkPalm);
+  place(rocks,6,(x,y,i)=>isl[i]===1&&tiles[i]===GRASS&&dist[i]<.5,2,mkRock);
+  place(rocks,3,(x,y,i)=>isl[i]===2&&tiles[i]>=SAND&&dist[i]<.6,2,mkRock);
+  // hidden axe near the island-1 rock farthest from spawn
+  axe=null;
+  {let br=null,bdr=-1;
+   for(const r of rocks){if(isl[r.ty*W+r.tx]!==1)continue;const d=Math.hypot(r.tx-17,r.ty-22);if(d>bdr){bdr=d;br=r;}}
+   const ok=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&tiles[y*W+x]>=SAND&&obst[y*W+x]===0;
+   const ax=br?br.tx:20,ay=br?br.ty:22;
+   const cand=[[ax+1,ay],[ax-1,ay],[ax,ay+1],[ax,ay-1],[ax+1,ay+1],[ax-1,ay+1]];
+   const sp2=cand.find(([x,y])=>ok(x,y))||[ax,ay+1];
+   axe={tx:sp2[0],ty:sp2[1],px:sp2[0]*T+16,py:sp2[1]*T+18,taken:false};}
+  // freshwater spring on island 1, away from spawn/site/axe
+  spring=null;
+  {let bx=17,by=22,bsc=-1;
+   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+     const i=y*W+x;if(isl[i]!==1||tiles[i]!==GRASS||obst[i])continue;
+     const dSpawn=Math.hypot(x-17,y-22),dSite=Math.hypot(x-site.tx,y-site.ty),dAxe=Math.hypot(x-axe.tx,y-axe.ty);
+     if(dSpawn<3||dSite<3||dAxe<2)continue;
+     const score=Math.min(dSpawn,dAxe)-dist[i]*3;
+     if(score>bsc){bsc=score;bx=x;by=y;}
+   }
+   spring={tx:bx,ty:by,px:bx*T+16,py:by*T+16};obst[by*W+bx]=1;}
+  fish.length=0;let guard=0;
+  while(fish.length<14&&guard++<4000){const x=Math.floor(rng()*50),y=Math.floor(rng()*H);if(tiles[y*W+x]===DEEP)fish.push({cx:x*T+16,cy:y*T+16,a:rng()*6.28,r:20+rng()*40,sp:.4+rng()*.6,col:['#ffb347','#ff6b6b','#f9f871','#7ee8fa'][fish.length%4]});}
+}
+
+// ---------- state ----------
+const player={x:0,y:0,dir:'down',moving:false,anim:0,hunger:100,thirst:100,hurt:0,mtx:null,mty:null,taskPalm:null,taskDrop:null,taskSite:false,taskAxe:false,taskDrink:false,taskAction:null};
+const marker={x:0,y:0,t:9,kind:'go'};
+const inv={wood:0,fiber:0,axe:0};
+const invested={wood:0,fiber:0};
+const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false};
+const keys={};
+const dressed=()=>st.cloth>=NEED_CLOTH;
+
+const QUESTS=[
+  {title:'Поший одяг',done:()=>dressed(),hint:()=>`Ти голий. Тапни пальму → «Зірвати листок». Листок упаде — тапни його на землі → «Додати до одягу». Треба ${st.cloth}/${NEED_CLOTH}.`},
+  {title:'Напийся і поїж',done:()=>st.ate>0&&st.drank>0,hint:()=>'Тапни струмок 💧, щоб напитися. Тряси пальму — кокос упаде, тапни його → «З’їсти» 🥥. Не дай шкалам впасти до нуля.'},
+  {title:'Знайди сокиру',done:()=>st.hasAxe,hint:()=>'Сокира 🪓 десь захована на острові. Погуляй і знайди її — без неї пальму не зрубати.'},
+  {title:'Збери дерево і мотузку',done:()=>invested.wood+inv.wood>=NEED_WOOD&&invested.fiber+inv.fiber>=NEED_FIBER,hint:()=>`Тапни пальму → «Зрубати». Візьми дерево ${Math.min(NEED_WOOD,invested.wood+inv.wood)}/${NEED_WOOD}, а з листя (коли одягнений) скрути мотузку ${Math.min(NEED_FIBER,invested.fiber+inv.fiber)}/${NEED_FIBER}.`},
+  {title:'Побудуй пліт',done:()=>st.raft>=100,hint:()=>`Тапни місце плоту на східному березі ⚓ — сам добудує. Зараз ${Math.round(st.raft)} %.`},
+];
+
+// ---------- canvas ----------
+const cvs=$('game'),ctx=cvs.getContext('2d');
+const mmC=$('minimap'),mm=mmC.getContext('2d');
+let vw=1,vh=1,dpr=1,zoom=1,cam={x:0,y:0};
+function resize(){dpr=Math.min(window.devicePixelRatio||1,2);vw=window.innerWidth;vh=window.innerHeight;cvs.width=Math.floor(vw*dpr);cvs.height=Math.floor(vh*dpr);zoom=vw>=1200?1.7:vw>=800?1.45:1.2;}
+window.addEventListener('resize',resize);resize();
+
+// ---------- audio ----------
+let ac=null;
+function sfx(kind){try{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();
+  const seqs={hit:[[140,.06]],harvest:[[440,.07],[660,.09]],craft:[[523,.07],[784,.12]],eat:[[300,.05],[380,.07]],hammer:[[180,.05],[90,.05]],win:[[523,.1],[659,.1],[784,.1],[1047,.25]],nope:[[200,.08],[150,.1]]};
+  let t=ac.currentTime;for(const[f,d]of seqs[kind]){const o=ac.createOscillator(),g=ac.createGain();o.type=kind==='hammer'?'square':'triangle';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.12,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d+.02);t+=d;}
+}catch(e){}}
+
+// ---------- UI ----------
+const foodFill=$('foodFill'),thirstFill=$('thirstFill'),foodEl=$('food'),thirstEl=$('thirst'),timeLbl=$('timeLbl'),hintEl=$('hint'),invEl=$('inv'),stepsEl=$('steps'),questHint=$('questHint');
+const ITEMS=[['wood','i-wood','дерево'],['fiber','i-rope','мотузка'],['cloth','i-cloth','одяг'],['axe','i-axe','сокира']];
+invEl.innerHTML=ITEMS.map(([k,ic,lbl])=>`<div class="slot" data-k="${k}"><svg><use href="#${ic}"/></svg><b></b><small>${lbl}</small></div>`).join('');
+const slots={};invEl.querySelectorAll('.slot').forEach(s=>slots[s.dataset.k]=s);
+function itemVal(k){return k==='cloth'?st.cloth:k==='axe'?inv.axe:inv[k];}
+function itemLabel(k,v){if(k==='cloth')return dressed()?'✓':`${v}/${NEED_CLOTH}`;if(k==='axe')return v?'✓':'';return v||'';}
+const ui={food:-1,thirst:-1,time:-1,inv:{},hint:'',quest:''};
+
+function updateUI(){
+  const fg=Math.round(player.hunger);if(ui.food!==fg){ui.food=fg;foodFill.style.transform=`scaleX(${clamp(fg/100,0,1)})`;foodEl.classList.toggle('low',fg<25);}
+  const wt=Math.round(player.thirst);if(ui.thirst!==wt){ui.thirst=wt;thirstFill.style.transform=`scaleX(${clamp(wt/100,0,1)})`;thirstEl.classList.toggle('low',wt<25);}
+  const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
+  for(const[k]of ITEMS){const v=itemVal(k);const key=k+':'+v;if(ui.inv[k]!==key){ui.inv[k]=key;const s=slots[k];const on=k==='cloth'?st.cloth>0:v>0;s.classList.toggle('has',on);s.querySelector('b').textContent=itemLabel(k,v);}}
+  let idx=0;while(idx<QUESTS.length&&QUESTS[idx].done())idx++;
+  if(idx>st.questIdx&&st.questIdx<QUESTS.length&&st.running)sfx('craft');
+  st.questIdx=idx;
+  const qhtml=QUESTS.slice(0,Math.min(idx+1,QUESTS.length)).map((q,i)=>`<div class="step ${i<idx?'done':'cur'}"><span class="k">${i<idx?'✓':'▶'}</span><span>${q.title}</span></div>`).join('');
+  const hh=idx<QUESTS.length?QUESTS[idx].hint():'Усе зроблено!';
+  const key=qhtml+hh;if(ui.quest!==key){ui.quest=key;stepsEl.innerHTML=qhtml;questHint.innerHTML=hh;}
+  let h='';
+  if(st.toastT>0)h=st.toastMsg;
+  else if(player.taskDrink)h='Йду пити воду…';
+  else if(player.taskPalm||player.taskDrop)h='Йду…';
+  else if(player.thirst<35)h='Хочеться пити 💧 — тапни струмок';
+  else if(player.hunger<35)h='Живіт бурчить 🍔 — тряси пальму по кокоси';
+  else if(!dressed())h='Тапни пальму 🌴 → зірвати листок';
+  else if(!st.hasAxe&&st.questIdx===2)h='Сокира десь захована 🪓';
+  else if(st.questIdx>=4)h='Тапни місце плоту ⚓';
+  else h='Тапни, куди йти';
+  if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
+}
+function toast(msg,t=3){st.toastMsg=msg;st.toastT=t;}
+
+// ---------- gameplay ----------
+function tileAt(px,py){const tx=Math.floor(px/T),ty=Math.floor(py/T);if(tx<0||ty<0||tx>=W||ty>=H)return -1;return tiles[ty*W+tx];}
+function blockedAt(px,py){const tx=Math.floor(px/T),ty=Math.floor(py/T);if(tx<0||ty<0||tx>=W||ty>=H)return true;const i=ty*W+tx;return tiles[i]<=SHALLOW||obst[i]===1;}
+function canStand(x,y){const r=8;return !(blockedAt(x-r,y-3)||blockedAt(x+r,y-3)||blockedAt(x-r,y+7)||blockedAt(x+r,y+7));}
+function clearTask(){player.mtx=player.mty=null;player.taskPalm=null;player.taskDrop=null;player.taskSite=false;player.taskAxe=false;player.taskDrink=false;player.taskAction=null;}
+function spawnDrop(kind,x,y){
+  // find a nearby standable spot so drops don't land on water/obstacles
+  for(let tries=0;tries<12;tries++){const ox=x+rand(-14,14),oy=y+rand(2,20);if(canStand(ox,oy)){drops.push({kind,x:ox,y:oy,born:st.time});return;}}
+  drops.push({kind,x,y:y+8,born:st.time});
+}
+function shakePalm(p){p.shake=1;spawnDrop('coconut',p.px,p.py-4);sfx('harvest');floats.push({x:p.px,y:p.py-40,s:'🥥 впав кокос',t:0});}
+function pluckLeaf(p){p.shake=.6;spawnDrop('leaf',p.px,p.py-4);sfx('harvest');floats.push({x:p.px,y:p.py-40,s:'🍃 листок',t:0});}
+function chopOnce(p){
+  if(!p.alive)return;
+  if(!st.hasAxe){toast('Потрібна сокира 🪓 — вона десь захована',2.2);sfx('nope');clearTask();return;}
+  p.hits++;p.shake=1;sfx('hit');
+  if(p.hits>=3){p.alive=false;p.hits=0;p.regrow=120;sfx('craft');
+    spawnDrop('wood',p.px,p.py-4);for(let i=0;i<3;i++)spawnDrop('coconut',p.px,p.py-4);for(let i=0;i<6;i++)spawnDrop('leaf',p.px,p.py-4);
+    floats.push({x:p.px,y:p.py-40,s:'Пальма впала!',t:0});if(player.taskPalm===p)clearTask();}
+}
+function eatCoconut(){if(player.hunger>=100){toast('Ти не голодний',1.2);return;}player.hunger=Math.min(100,player.hunger+35);st.ate++;sfx('eat');floats.push({x:player.x,y:player.y-44,s:'+35 🥥',t:0});}
+function addCloth(){st.cloth++;sfx('craft');floats.push({x:player.x,y:player.y-44,s:dressed()?'Одягнений! 😎':`Одяг ${st.cloth}/${NEED_CLOTH}`,t:0});}
+function makeFiber(){inv.fiber++;sfx('craft');floats.push({x:player.x,y:player.y-44,s:'🪢 мотузка',t:0});}
+function takeWood(){inv.wood++;sfx('craft');floats.push({x:player.x,y:player.y-44,s:'🪵 дерево',t:0});}
+function drink(){player.thirst=100;st.drank++;sfx('eat');floats.push({x:player.x,y:player.y-44,s:'Ковть… 💧',t:0});}
+function tryBuild(){
+  if(st.hammer>0)return;
+  if(inv.wood>0&&invested.wood<NEED_WOOD){inv.wood--;invested.wood++;st.raftTarget+=20;}
+  else if(inv.fiber>0&&invested.fiber<NEED_FIBER){inv.fiber--;invested.fiber++;st.raftTarget+=10;}
+  else{const nw=NEED_WOOD-invested.wood,nf=NEED_FIBER-invested.fiber;if(nw||nf)toast(`Ще треба: ${nw?`дерево ×${nw}`:''}${nw&&nf?', ':''}${nf?`мотузка ×${nf}`:''}`,2.6);clearTask();sfx('nope');return;}
+  st.hammer=.5;sfx('hammer');floats.push({x:site.px,y:site.py-30,s:`🔨 ${st.raftTarget} %`,t:0});
+}
+function useDrop(d){
+  if(d.kind==='coconut')eatCoconut();
+  else if(d.kind==='leaf'){if(!dressed())addCloth();else makeFiber();}
+  else if(d.kind==='wood')takeWood();
+  const k=drops.indexOf(d);if(k>=0)drops.splice(k,1);
+}
+function die(cause){
+  if(!st.running)return;st.running=false;st.over=true;clearTask();$('menu').hidden=true;
+  $('deadWhy').textContent=cause==='thirst'?'Спрага':'Голод';
+  $('deadTitle').textContent='Костя не вижив';
+  $('deadMsg').textContent=cause==='thirst'?'Вода закінчилась. Пий зі струмка 💧 частіше.':'Їжа закінчилась. Тряси пальму по кокоси і їж 🥥.';
+  $('dead').hidden=false;
+}
+function reset(){
+  Object.assign(player,{x:spawn.x,y:spawn.y,dir:'down',hunger:100,thirst:100,hurt:0,anim:0});clearTask();
+  Object.assign(inv,{wood:0,fiber:0,axe:0});Object.assign(invested,{wood:0,fiber:0});
+  Object.assign(st,{running:true,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,questIdx:0,actCd:0,hasAxe:false});
+  for(const p of palms){p.alive=true;p.hits=0;p.regrow=0;p.shake=0;}
+  if(axe)axe.taken=false;drops.length=0;floats.length=0;seen.fill(0);ui.quest='';ui.hint='';marker.t=9;
+  $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('menu').hidden=true;
+  toast('Ти на острові. Знайди воду і поший одяг',3.5);
+}
+function win(){st.won=true;st.running=false;sfx('win');$('winTime').textContent=fmtTime(st.time);$('win').hidden=false;}
+
+function update(dt){
+  if(st.toastT>0)st.toastT-=dt;
+  if(!st.running)return;
+  st.time+=dt;marker.t+=dt;if(st.actCd>0)st.actCd-=dt;
+  // movement
+  let dx=0,dy=0;
+  const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
+  const ky=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0);
+  if(kx||ky){clearTask();dx=kx;dy=ky;}
+  else if(player.mtx!=null){const gx=player.mtx-player.x,gy=player.mty-player.y,gl=Math.hypot(gx,gy);if(gl>4){dx=gx/gl;dy=gy/gl;}else player.mtx=player.mty=null;}
+  const len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}
+  player.moving=len>0.1;
+  if(player.moving){
+    if(Math.abs(dx)>Math.abs(dy))player.dir=dx>0?'right':'left';else player.dir=dy>0?'down':'up';
+    const sp=165*dt,nx=player.x+dx*sp,ny=player.y+dy*sp;let bx=false,by=false;
+    if(canStand(nx,player.y))player.x=nx;else bx=true;
+    if(canStand(player.x,ny))player.y=ny;else by=true;
+    if(bx&&by&&!player.taskPalm&&!player.taskSite&&!player.taskDrop&&!player.taskDrink&&!player.taskAxe)player.mtx=player.mty=null;
+    player.anim+=dt*9;
+  }
+  // axe pickup on proximity
+  if(axe&&!axe.taken&&Math.hypot(axe.px-player.x,axe.py-player.y)<26){axe.taken=true;st.hasAxe=true;inv.axe=1;player.taskAxe=false;if(!player.taskPalm&&!player.taskSite&&!player.taskDrop&&!player.taskDrink)player.mtx=player.mty=null;sfx('craft');toast('Ти знайшов сокиру! 🪓 Тепер можна рубати пальми',4);floats.push({x:axe.px,y:axe.py-26,s:'🪓 Сокира!',t:0});}
+  // tasks on arrival
+  if(player.taskPalm){const p=player.taskPalm;
+    if(!p.alive)clearTask();
+    else if(Math.hypot(p.px-player.x,p.py-player.y)<54){player.mtx=player.mty=null;player.dir=p.px<player.x?'left':'right';
+      if(st.actCd<=0){const a=player.taskAction;if(a==='shake'){shakePalm(p);st.actCd=.35;clearTask();}else if(a==='leaf'){pluckLeaf(p);st.actCd=.35;clearTask();}else{chopOnce(p);st.actCd=.3;}}}
+  }else if(player.taskDrop){const d=player.taskDrop;
+    if(drops.indexOf(d)<0)clearTask();
+    else if(Math.hypot(d.x-player.x,d.y-player.y)<40){player.mtx=player.mty=null;useDrop(d);clearTask();}
+  }else if(player.taskSite){
+    if(st.raft>=100)clearTask();
+    else if(Math.hypot(site.px-player.x,site.py-player.y)<58){player.mtx=player.mty=null;tryBuild();}
+  }else if(player.taskDrink&&spring){
+    if(Math.hypot(spring.px-player.x,spring.py-player.y)<48){player.mtx=player.mty=null;drink();clearTask();}
+  }
+  // survival
+  const pt=player.thirst,ph=player.hunger;
+  player.hunger=Math.max(0,ph-(player.moving?100/210:100/420)*dt);
+  player.thirst=Math.max(0,pt-(player.moving?100/150:100/300)*dt);
+  if(pt>=25&&player.thirst<25)toast('Хочеться пити 💧 — знайди струмок',2.6);
+  if(ph>=25&&player.hunger<25)toast('Живіт бурчить 🍔 — тряси пальму по кокоси',2.6);
+  if(player.hunger<=0){die('hunger');return;}
+  if(player.thirst<=0){die('thirst');return;}
+  // world anim
+  for(const p of palms){if(p.shake>0)p.shake=Math.max(0,p.shake-dt*4);if(!p.alive){p.regrow-=dt;if(p.regrow<=0){p.alive=true;p.hits=0;}}}
+  if(st.raft<st.raftTarget)st.raft=Math.min(st.raftTarget,st.raft+dt*45);
+  if(st.hammer>0)st.hammer-=dt;
+  if(st.raft>=100&&!st.won&&st.hammer<=0){st.hammer=1;setTimeout(win,700);}
+  for(const f of fish)f.a+=f.sp*dt;
+  for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.4)floats.splice(i,1);}
+  const ptx=Math.floor(player.x/T),pty=Math.floor(player.y/T);
+  for(let y=pty-7;y<=pty+7;y++)for(let x=ptx-9;x<=ptx+9;x++)if(x>=0&&y>=0&&x<W&&y<H)seen[y*W+x]=1;
+}
+
+// ---------- drawing ----------
+function tileColor(t,x,y){const h=(x*7+y*13)%5;if(t===DEEP)return h===0?'#1a68a0':'#1b6fa8';if(t===SHALLOW)return h===0?'#38a0d2':'#3aa6d8';if(t===SAND)return h===0?'#e2cd8e':'#e8d59a';return h===0?'#63b043':'#6fbf4a';}
+function drawWorld(now){
+  const vwz=vw/zoom,vhz=vh/zoom;
+  cam.x=player.x-vwz/2;cam.y=player.y-vhz/2; // always centre the player
+  ctx.setTransform(dpr*zoom,0,0,dpr*zoom,-cam.x*dpr*zoom,-cam.y*dpr*zoom);
+  ctx.fillStyle='#1b6fa8';ctx.fillRect(cam.x-T,cam.y-T,vwz+2*T,vhz+2*T); // ocean beyond the map
+  const x0=Math.max(0,Math.floor(cam.x/T)),y0=Math.max(0,Math.floor(cam.y/T)),x1=Math.min(W-1,Math.ceil((cam.x+vwz)/T)),y1=Math.min(H-1,Math.ceil((cam.y+vhz)/T));
+  const tsec=now/1000;
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const i=y*W+x,t=tiles[i];ctx.fillStyle=tileColor(t,x,y);ctx.fillRect(x*T,y*T,T,T);
+    if(t<=SHALLOW){const ph=(x*3+y*5+Math.floor(tsec*2))%4;ctx.fillStyle=t===DEEP?'rgba(255,255,255,.12)':'rgba(255,255,255,.22)';ctx.fillRect(x*T+4+ph*3,y*T+10+((x+y)%3)*6,10,2);
+      if(t===SHALLOW){const land=(tiles[i-1]>=SAND)||(tiles[i+1]>=SAND)||(y>0&&tiles[i-W]>=SAND)||(y<H-1&&tiles[i+W]>=SAND);if(land){ctx.fillStyle='rgba(255,255,255,.45)';const o=Math.floor(tsec*3+x)%3;ctx.fillRect(x*T+o,y*T+2,12,2);ctx.fillRect(x*T+18-o,y*T+26,10,2);}}}
+    else if(t===SAND){ctx.fillStyle='#d4bd7c';ctx.fillRect(x*T+6+(x%3)*7,y*T+8+(y%2)*12,2,2);ctx.fillRect(x*T+20,y*T+22-(x%2)*9,2,2);}
+    else{ctx.fillStyle='#4f9a32';const g=(x*5+y*3)%4;ctx.fillRect(x*T+5+g*5,y*T+6+g*4,2,5);ctx.fillRect(x*T+22-g*3,y*T+19,2,5);}
+  }
+  for(const f of fish){const fx=f.cx+Math.cos(f.a)*f.r,fy=f.cy+Math.sin(f.a)*f.r*.5;if(fx<cam.x-20||fx>cam.x+vwz+20||fy<cam.y-20||fy>cam.y+vhz+20)continue;if(tileAt(fx,fy)!==DEEP)continue;const dirx=-Math.sin(f.a)>=0?1:-1;ctx.fillStyle=f.col;ctx.globalAlpha=.8;ctx.beginPath();ctx.ellipse(fx,fy,6,3,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.moveTo(fx-dirx*5,fy);ctx.lineTo(fx-dirx*10,fy-3);ctx.lineTo(fx-dirx*10,fy+3);ctx.closePath();ctx.fill();ctx.globalAlpha=1;}
+  drawSite(tsec);
+  const tp=player.taskPalm?{x:player.taskPalm.px,y:player.taskPalm.py}:player.taskSite?{x:site.px,y:site.py}:player.taskDrop?{x:player.taskDrop.x,y:player.taskDrop.y}:(player.mtx!=null?{x:player.mtx,y:player.mty}:null);
+  if(tp){const pulse=4+Math.sin(tsec*6)*2;ctx.strokeStyle='rgba(245,236,214,.75)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(tp.x,tp.y,9+pulse,0,Math.PI*2);ctx.stroke();ctx.fillStyle='rgba(245,236,214,.55)';ctx.beginPath();ctx.arc(tp.x,tp.y,2.5,0,Math.PI*2);ctx.fill();}
+  if(marker.t<0.6){const a=1-marker.t/0.6,rr=8+marker.t*30;const c=marker.kind==='chop'?'126,217,87':marker.kind==='build'?'255,154,60':'245,236,214';ctx.strokeStyle=`rgba(${c},${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,rr,0,Math.PI*2);ctx.stroke();}
+  const ents=[];
+  for(const p of palms)if(p.px>cam.x-60&&p.px<cam.x+vwz+60&&p.py>cam.y-20&&p.py<cam.y+vhz+80)ents.push({y:p.py,f:()=>drawPalm(p,tsec)});
+  for(const r of rocks)ents.push({y:r.py,f:()=>drawRock(r)});
+  if(spring)ents.push({y:spring.py+8,f:()=>drawSpring(tsec)});
+  if(axe&&!axe.taken)ents.push({y:axe.py,f:()=>drawAxe(tsec)});
+  for(const d of drops)ents.push({y:d.y,f:()=>drawDrop(d,tsec)});
+  ents.push({y:player.y+8,f:()=>drawPlayer(tsec)});
+  ents.sort((a,b)=>a.y-b.y);for(const e of ents)e.f();
+  ctx.font='700 11px Rubik, sans-serif';ctx.textAlign='center';
+  for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-.8)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0f1c2a';ctx.fillText(f.s,f.x+1,f.y-f.t*26+1);ctx.fillStyle='#f5ecd6';ctx.fillText(f.s,f.x,f.y-f.t*26);}
+  ctx.globalAlpha=1;
+}
+function drawDrop(d,tsec){
+  const b=Math.sin(tsec*3+d.x)*1.5,x=d.x,y=d.y+b;
+  ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(x,d.y+5,8,3,0,0,Math.PI*2);ctx.fill();
+  const glow=(Math.sin(tsec*4+d.y)+1)/2;ctx.strokeStyle=`rgba(255,240,150,${.25+glow*.4})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.stroke();
+  if(d.kind==='coconut'){ctx.fillStyle='#6b3d1e';ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#9a6a3a';ctx.fillRect(x-4,y-4,2,2);ctx.fillStyle='#2b1a0b';ctx.fillRect(x-1,y-2,1,1);ctx.fillRect(x+2,y,1,1);ctx.fillRect(x-1,y+2,1,1);}
+  else if(d.kind==='leaf'){ctx.save();ctx.translate(x,y);ctx.rotate(.5);ctx.fillStyle='#3fa64a';ctx.beginPath();ctx.ellipse(0,0,10,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#2b7a33';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-9,0);ctx.lineTo(9,0);ctx.stroke();ctx.restore();}
+  else{ctx.fillStyle='#8a5a2b';ctx.fillRect(x-9,y-4,18,8);ctx.fillStyle='#a9733a';ctx.fillRect(x-9,y-2,18,2);ctx.fillStyle='#d6a56a';ctx.beginPath();ctx.arc(x-9,y,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.arc(x-9,y,1.6,0,Math.PI*2);ctx.fill();}
+}
+function drawPalm(p,tsec){
+  const sx=p.shake>0?Math.sin(tsec*45)*3*p.shake:0,bx=p.px,by=p.py;
+  ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(bx,by+1,13,5,0,0,Math.PI*2);ctx.fill();
+  if(!p.alive){ctx.fillStyle='#7a4a22';ctx.fillRect(bx-5,by-11,10,12);ctx.fillStyle='#c9925a';ctx.fillRect(bx-5,by-14,10,4);ctx.fillStyle='#a0713f';ctx.fillRect(bx-3,by-13,6,2);return;}
+  let tx=bx+sx,ty=by;for(let i=0;i<6;i++){ctx.fillStyle=i%2?'#8a5a2b':'#7a4a22';ctx.fillRect(tx-4,ty-9,8,10);ty-=8;tx+=p.lean*i*.9;}
+  const topx=tx+sx*.5,topy=ty-2,angs=[-160,-118,-78,-40,0,40,95,140];
+  angs.forEach((a,i)=>{ctx.save();ctx.translate(topx,topy);ctx.rotate(a*Math.PI/180+Math.sin(tsec*1.5+i)*.04);ctx.fillStyle=i%2?'#2e8b3a':'#3fa64a';ctx.beginPath();ctx.ellipse(15,0,16,4.5,0,0,Math.PI*2);ctx.fill();ctx.restore();});
+  ctx.fillStyle='#5b3a1e';[[-6,5],[1,7],[7,4]].forEach(([dx,dy])=>{ctx.beginPath();ctx.arc(topx+dx,topy+dy,3.5,0,Math.PI*2);ctx.fill();});
+  if(p.hits>0){ctx.fillStyle='#f5ecd6';ctx.fillRect(bx-12,by-60,24,4);ctx.fillStyle='#ff9a3c';ctx.fillRect(bx-12,by-60,8*p.hits,4);}
+}
+function drawRock(r){const bx=r.px,by=r.py,w=r.w;ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(bx,by+1,w+2,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8d949c';ctx.beginPath();ctx.moveTo(bx-w,by);ctx.lineTo(bx-w*.7,by-w*.9);ctx.lineTo(bx,by-w*1.2);ctx.lineTo(bx+w*.75,by-w*.8);ctx.lineTo(bx+w,by);ctx.closePath();ctx.fill();ctx.fillStyle='#b3bac2';ctx.beginPath();ctx.moveTo(bx-w*.6,by-w*.8);ctx.lineTo(bx,by-w*1.1);ctx.lineTo(bx+w*.3,by-w*.75);ctx.lineTo(bx-w*.3,by-w*.55);ctx.closePath();ctx.fill();}
+function drawSpring(tsec){const x=spring.px,y=spring.py,o=Math.sin(tsec*2)*2;ctx.fillStyle='rgba(0,0,0,.14)';ctx.beginPath();ctx.ellipse(x,y+5,19,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#2f8f6f';ctx.beginPath();ctx.ellipse(x,y,18,9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#37c0e8';ctx.beginPath();ctx.ellipse(x,y,14,6.5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(x-9+o,y-2,6,1);ctx.fillRect(x+3-o,y+2,5,1);ctx.fillStyle='#2e8b3a';ctx.fillRect(x-16,y-9,2,8);ctx.fillRect(x-13,y-7,2,6);ctx.fillRect(x+15,y-8,2,7);}
+function drawAxe(tsec){const x=axe.px,y=axe.py,b=Math.sin(tsec*3)*1;ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(x,y+3,9,4,0,0,Math.PI*2);ctx.fill();ctx.save();ctx.translate(x,y-6+b);ctx.rotate(-0.5);ctx.fillStyle='#8a5a2b';ctx.fillRect(-1.5,-2,3,16);ctx.fillStyle='#c2c8ce';ctx.beginPath();ctx.moveTo(-1,-10);ctx.lineTo(7,-12);ctx.lineTo(8,-4);ctx.lineTo(-1,-6);ctx.closePath();ctx.fill();ctx.fillStyle='#eef2f5';ctx.fillRect(4,-11,3,2);ctx.restore();const s=(Math.sin(tsec*4)+1)/2;ctx.fillStyle=`rgba(255,240,150,${.35+s*.5})`;ctx.fillRect(x+5,y-20,4,1);ctx.fillRect(x+6,y-21,2,3);}
+function drawSite(tsec){const x=site.px-22,y=site.py-16;ctx.fillStyle='rgba(120,90,40,.18)';ctx.fillRect(x-4,y-4,52,40);ctx.strokeStyle=st.raft>=100?'#7ed957':'#a8894a';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.strokeRect(x,y,44,32);ctx.setLineDash([]);for(let i=0;i<invested.wood;i++){ctx.fillStyle=i%2?'#8a5a2b':'#a0713f';ctx.fillRect(x+2+i*11,y+2,9,28);ctx.fillStyle='#5e3a18';ctx.fillRect(x+2+i*11,y+2,9,2);}for(let i=0;i<invested.fiber;i++){ctx.fillStyle='#d8b56a';ctx.fillRect(x+1,y+7+i*16,42,3);}if(st.raft>=100){ctx.fillStyle='#8a5a2b';ctx.fillRect(x+20,y-26,3,30);ctx.fillStyle='#f5ecd6';ctx.fillRect(x+23,y-26,16,10);}ctx.font='700 10px Rubik, sans-serif';ctx.textAlign='center';const label=st.raft>=100?'Пліт готовий!':`Пліт ${Math.round(st.raft)} %`;ctx.fillStyle='rgba(15,28,42,.75)';ctx.fillRect(site.px-34,y-22,68,14);ctx.fillStyle='#f5ecd6';ctx.fillText(label,site.px,y-12);}
+function drawPlayer(tsec){
+  const x=player.x,y=player.y,S=2,on=dressed();
+  ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(x,y+8,10,4,0,0,Math.PI*2);ctx.fill();
+  ctx.save();ctx.translate(x,y+8);if(player.dir==='left')ctx.scale(-1,1);
+  const bob=player.moving?Math.round(Math.abs(Math.sin(player.anim))*1):0;ctx.translate(-10,-40-bob);
+  const R=(px,py,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(px*S,py*S,w*S,h*S);};
+  const back=player.dir==='up',f=player.moving?(Math.sin(player.anim)>0?1:-1):0;
+  R(2,14+(f>0?1:0),3,6-(f>0?1:0),'#e8b98a');R(5,14+(f<0?1:0),3,6-(f<0?1:0),'#e8b98a');R(2,19,3,1,'#4a2f18');R(5,19,3,1,'#4a2f18');
+  if(on){R(2,14,6,3,'#4c9a3f');R(2,16,1,1,'#2f6328');R(4,16,1,1,'#2f6328');R(6,16,1,1,'#2f6328');}
+  else{for(let i=0;i<6;i++)for(let j=0;j<2;j++)R(2+i,14+j,1,1,(i+j)%2?'#202020':'#9aa0a6');}
+  R(2,6,6,8,'#4f9a5a');R(2,6,6,1,'#3d7d48');R(0,6+(f<0?1:0),2,7,'#e8b98a');R(8,6+(f>0?1:0),2,7,'#e8b98a');R(0,6,2,1,'#3d7d48');R(8,6,2,1,'#3d7d48');
+  R(1,0,8,2,'#c9662f');R(1,2,1,4,'#c9662f');R(8,2,1,4,'#c9662f');
+  if(back){R(2,2,6,4,'#c9662f');R(2,5,6,1,'#a34f22');}else{R(2,2,6,4,'#e8b98a');R(3,3,1,1,'#3a5f9e');R(6,3,1,1,'#3a5f9e');R(4,5,2,1,'#c98a6a');}
+  ctx.restore();
+}
+const mmOff=document.createElement('canvas');mmOff.width=W;mmOff.height=H;const mmo=mmOff.getContext('2d');
+function drawMinimap(){
+  const img=mmo.createImageData(W,H),d=img.data;
+  for(let i=0;i<W*H;i++){let c;if(!seen[i])c=[15,28,42];else{const t=tiles[i];c=t===DEEP?[27,111,168]:t===SHALLOW?[58,166,216]:t===SAND?[232,213,154]:[111,191,74];}d[i*4]=c[0];d[i*4+1]=c[1];d[i*4+2]=c[2];d[i*4+3]=255;}
+  mmo.putImageData(img,0,0);mm.imageSmoothingEnabled=false;mm.clearRect(0,0,mmC.width,mmC.height);mm.drawImage(mmOff,0,0,mmC.width,mmC.height);
+  const kx=mmC.width/W,ky=mmC.height/H;
+  if(spring&&seen[spring.ty*W+spring.tx]){mm.fillStyle='#37c0e8';mm.fillRect(spring.tx*kx-1,spring.ty*ky-1,3,3);}
+  if(axe&&!axe.taken&&seen[axe.ty*W+axe.tx]){mm.fillStyle='#e6ebf0';mm.fillRect(axe.tx*kx-1,axe.ty*ky-1,2,2);}
+  mm.fillStyle='#ff9a3c';mm.fillRect(site.tx*kx-1,site.ty*ky-1,3,3);
+  mm.fillStyle='#e5443b';mm.fillRect(player.x/T*kx-2,player.y/T*ky-2,4,4);
+  mm.font='700 9px Rubik, sans-serif';mm.fillStyle='#f5ecd6';mm.textAlign='center';mm.fillText('Франція?',62*kx,20*ky+3);
+}
+
+// ---------- input ----------
+window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;if(!st.running&&!st.over&&!$('start').hidden&&e.code==='Enter')startGame();});
+window.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
+
+const menuEl=$('menu');let menuCtx=null;
+function closeMenu(){menuEl.hidden=true;menuCtx=null;}
+function openMenu(items,sx,sy){
+  menuEl.innerHTML=items.map(it=>`<button data-a="${it.a}" ${it.on?'':'disabled'}><b>${it.label}</b><span>${it.sub}</span></button>`).join('');
+  menuEl.hidden=false;
+  const mw=210,mh=Math.min(items.length*62+8,190),pad=10;
+  menuEl.style.left=clamp(sx-mw/2,pad,Math.max(pad,vw-mw-pad))+'px';
+  menuEl.style.top=clamp(sy-mh-6,pad,Math.max(pad,vh-mh-pad))+'px';
+}
+menuEl.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-a]');if(!b||!menuCtx)return;
+  if(b.disabled){toast('Сокира десь захована 🪓 — знайди її',2.4);sfx('nope');return;}
+  const a=b.dataset.a,c=menuCtx;closeMenu();clearTask();
+  if(c.type==='palm'){player.taskPalm=c.obj;player.taskAction=a;player.mtx=c.obj.px;player.mty=c.obj.py+22;marker.x=c.obj.px;marker.y=c.obj.py;marker.kind=a==='chop'?'chop':'go';}
+  else if(c.type==='drop'){player.taskDrop=c.obj;player.mtx=c.obj.x;player.mty=c.obj.y;marker.x=c.obj.x;marker.y=c.obj.y;marker.kind='go';}
+  marker.t=0;
+});
+function tapWorld(clientX,clientY){
+  if(!st.running)return;
+  if(!menuEl.hidden){closeMenu();return;}
+  const rect=cvs.getBoundingClientRect();
+  const wx=cam.x+(clientX-rect.left)/zoom,wy=cam.y+(clientY-rect.top)/zoom;
+  // palm?
+  let bp=null,bd=44;for(const p of palms){if(!p.alive)continue;const d=Math.hypot(p.px-wx,p.py-8-wy);if(d<bd){bd=d;bp=p;}}
+  if(bp){menuCtx={type:'palm',obj:bp};openMenu([
+    {a:'shake',label:'Потрясти 🥥',sub:'упаде кокос',on:true},
+    {a:'leaf',label:'Зірвати листок 🍃',sub:'упаде листок',on:true},
+    {a:'chop',label:'Зрубати 🪓',sub:st.hasAxe?'6 листя, 1 дерево, 3 кокоси':'спершу знайди сокиру',on:st.hasAxe},
+  ],clientX-rect.left,clientY-rect.top);return;}
+  // drop?
+  let dp=null,dd=26;for(const d of drops){const dist=Math.hypot(d.x-wx,d.y-wy);if(dist<dd){dd=dist;dp=d;}}
+  if(dp){menuCtx={type:'drop',obj:dp};
+    const label=dp.kind==='coconut'?{a:'eat',label:'З’їсти 🥥',sub:'+ситість'}:dp.kind==='wood'?{a:'take',label:'Взяти для плота 🪵',sub:'дерево для плота'}:(dressed()?{a:'fiber',label:'Скрутити мотузку 🪢',sub:'для плота'}:{a:'cloth',label:'Додати до одягу 🍃',sub:`одяг ${st.cloth}/${NEED_CLOTH}`});
+    openMenu([label],clientX-rect.left,clientY-rect.top);return;}
+  clearTask();
+  if(axe&&!axe.taken&&Math.hypot(axe.px-wx,axe.py-wy)<34){player.taskAxe=true;player.mtx=axe.px;player.mty=axe.py+14;marker.x=axe.px;marker.y=axe.py;marker.kind='go';}
+  else if(spring&&Math.hypot(spring.px-wx,spring.py-wy)<38){player.taskDrink=true;player.mtx=spring.px;player.mty=spring.py+24;marker.x=spring.px;marker.y=spring.py;marker.kind='go';}
+  else if(Math.hypot(site.px-wx,site.py-wy)<44&&st.raft<100){player.taskSite=true;player.mtx=site.px;player.mty=site.py+18;marker.x=site.px;marker.y=site.py;marker.kind='build';}
+  else{player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';}
+  marker.t=0;
+}
+cvs.addEventListener('pointerdown',e=>{e.preventDefault();tapWorld(e.clientX,e.clientY);});
+
+function startGame(){sfx('craft');reset();}
+$('playBtn').addEventListener('click',startGame);
+$('winBtn').addEventListener('click',()=>{$('win').hidden=true;$('start').hidden=false;st.over=false;});
+$('deadBtn').addEventListener('click',startGame);
+
+// ---------- loop ----------
+genWorld();player.x=spawn.x;player.y=spawn.y;
+let last=performance.now(),mmT=0;
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);drawWorld(now);mmT+=dt;if(mmT>.25){mmT=0;drawMinimap();}updateUI();requestAnimationFrame(frame);}
+drawMinimap();requestAnimationFrame(frame);
+})();
+</script>
