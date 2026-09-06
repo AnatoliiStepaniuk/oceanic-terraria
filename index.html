@@ -547,7 +547,7 @@ function tapWorld(clientX,clientY){
   // fallen items first — they sit near the palm base, so they take priority over the tree
   let dp=null,dd=32;for(const d of drops){const dist=Math.hypot(d.x-wx,d.y-wy);if(dist<dd){dd=dist;dp=d;}}
   if(dp){menuCtx={type:'drop',obj:dp};
-    const label=dp.kind==='coconut'?{a:'eat',label:'З’їсти 🥥',sub:'+ситість'}:dp.kind==='wood'?{a:'take',label:'Взяти для плота 🪵',sub:'дерево для плота'}:(dressed()?{a:'fiber',label:'Скрутити мотузку 🪢',sub:'для плота'}:{a:'cloth',label:'Додати до одягу 🍃',sub:`одяг ${st.cloth}/${NEED_CLOTH}`});
+    const label=dp.kind==='coconut'?{a:'eat',label:'З’їсти 🥥',sub:'+ситість',on:true}:dp.kind==='wood'?{a:'take',label:'Взяти для плота 🪵',sub:'дерево для плота',on:true}:(dressed()?{a:'fiber',label:'Скрутити мотузку 🪢',sub:'для плота',on:true}:{a:'cloth',label:'Додати до одягу 🍃',sub:`одяг ${st.cloth}/${NEED_CLOTH}`,on:true});
     openMenu([label],clientX-rect.left,clientY-rect.top);return;}
   // palm — aim at the trunk/crown, not the sandy base where items land
   let bp=null,bd=38;for(const p of palms){if(!p.alive)continue;const d=Math.hypot(p.px-wx,p.py-22-wy);if(d<bd){bd=d;bp=p;}}
