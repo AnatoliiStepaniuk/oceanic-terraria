@@ -80,15 +80,19 @@
   .letter{background:var(--sand);color:var(--ink);padding:16px 18px;border-radius:4px;margin:14px 0;box-shadow:0 0 0 3px var(--ink)}
   .letter p,.letter ul{color:var(--ink)}
   .letter b{color:#7a3c00}
-  #listBtn{position:fixed;z-index:4;left:calc(12px + env(safe-area-inset-left));bottom:calc(84px + env(safe-area-inset-bottom));background:rgba(23,40,58,.92);color:var(--cream);border:2px solid var(--sand);box-shadow:0 0 0 3px var(--ink);border-radius:6px;padding:8px 12px;font:700 14px Rubik,sans-serif;cursor:pointer}
-  #listBtn:active{transform:translateY(2px)}
+  #listBtn,#airportBtn{position:fixed;z-index:4;left:calc(12px + env(safe-area-inset-left));background:rgba(23,40,58,.92);color:var(--cream);border:2px solid var(--sand);box-shadow:0 0 0 3px var(--ink);border-radius:6px;padding:8px 12px;font:700 14px Rubik,sans-serif;cursor:pointer}
+  #airportBtn{bottom:calc(84px + env(safe-area-inset-bottom))}
+  #listBtn{bottom:calc(134px + env(safe-area-inset-bottom))}
+  #listBtn:active,#airportBtn:active{transform:translateY(2px)}
   #checklistBody{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;text-align:left;max-height:52vh;overflow:auto;margin:10px 0 16px;padding-right:6px}
   .clrow{display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap}
   .clrow.done{color:var(--good)}
   .clrow.todo{color:var(--muted)}
   @media (max-width:640px){
     #checklistBody{grid-template-columns:1fr 1fr;font-size:12px}
-    #listBtn{bottom:calc(70px + env(safe-area-inset-bottom));padding:6px 10px;font-size:12px}
+    #listBtn,#airportBtn{padding:6px 10px;font-size:12px}
+    #airportBtn{bottom:calc(66px + env(safe-area-inset-bottom))}
+    #listBtn{bottom:calc(110px + env(safe-area-inset-bottom))}
     #quest{top:auto;bottom:calc(150px + env(safe-area-inset-bottom));font-size:13px;padding:8px 10px}
     #mini canvas{width:96px;height:59px}
     .bar-row .bar{width:92px}
@@ -129,6 +133,7 @@
 
 <div id="menu" hidden></div>
 <button id="listBtn" hidden>📋 Країни</button>
+<button id="airportBtn" hidden>🛫 Аеропорт</button>
 
 <div id="start" class="overlay">
   <div class="panel">
@@ -763,6 +768,7 @@ function drawMinimap(){
 function layoutHud(){const isl=st.scene==='island';
   $('food').hidden=!isl;$('thirst').hidden=!isl;$('inv').hidden=!isl;
   const lb=$('listBtn');if(lb)lb.hidden=!(st.scene==='europe'||st.scene==='space');
+  const ab=$('airportBtn');if(ab)ab.hidden=false;
   const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?(EUR.id==='asia'?'Азія 🌏':EUR.id==='sa'?'Пд.Америка 🌎':'Європа 🗺️'):st.scene==='inside'?'Усередині 🚪':st.scene==='space'?'Космос 🚀':'Мапа острова';}
 function startSea(){
   st.scene='sea';st.running=true;st.over=false;st.won=true;st.seaWon=false;st.seaProg=0;st.seaInv=1.2;st.time=0;st.toastT=0;
@@ -1575,6 +1581,7 @@ $('launchBtn').addEventListener('click',()=>{$('rocket').hidden=true;startSpace(
 $('spaceRebirthBtn').addEventListener('click',()=>{$('spaceWin').hidden=true;startGame();});
 $('saRebirthBtn').addEventListener('click',()=>{$('saWin').hidden=true;startGame();});
 $('listBtn').addEventListener('click',openChecklist);
+$('airportBtn').addEventListener('click',goToStart);
 $('checklistClose').addEventListener('click',()=>{$('checklist').hidden=true;st.running=true;});
 
 // ---------- loop ----------
