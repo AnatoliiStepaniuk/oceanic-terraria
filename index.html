@@ -544,9 +544,9 @@ function updateUI(){
   }
   if(st.scene==='match'){
     const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
-    const qk='m'+st.matchYou;
-    if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">⚽</span><span>Обіграй Англію</span></div>';questHint.innerHTML=`Рахунок: <b>Ти ${st.matchYou} : 0 Англія</b> ⚽ (забий 3)`;}
-    let h=st.toastT>0?st.toastMsg:'Підійди до мʼяча і штовхай його у праві ворота 🥅';
+    const qk='m'+st.matchYou+'|'+st.matchEng;
+    if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">🧤</span><span>Воротар: відбий Англію</span></div>';questHint.innerHTML=`Сейви: <b>${st.matchYou}/3</b> 🧤 · пропущено ${st.matchEng}/3`;}
+    let h=st.toastT>0?st.toastMsg:'Стій у своїх воротах 🥅 і лови мʼяч у кутках!';
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -774,7 +774,7 @@ function drawMinimap(){
   if(st.scene==='europe'){drawEuropeMini();return;}
   if(st.scene==='inside'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#17283a';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#f5ecd6';mm.font='700 12px Rubik, sans-serif';mm.textAlign='center';mm.fillText('🚪 Усередині',mmC.width/2,mmC.height/2+4);return;}
   if(st.scene==='space'){drawSpaceMini();return;}
-  if(st.scene==='match'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#0d2a12';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#fff';mm.font='700 12px Rubik, sans-serif';mm.textAlign='center';mm.fillText('⚽ Ти '+st.matchYou+':0',mmC.width/2,mmC.height/2+4);return;}
+  if(st.scene==='match'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#0d2a12';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#fff';mm.font='700 12px Rubik, sans-serif';mm.textAlign='center';mm.fillText('🧤 '+st.matchYou+'/3',mmC.width/2,mmC.height/2+4);return;}
   const img=mmo.createImageData(W,H),d=img.data;
   for(let i=0;i<W*H;i++){let c;if(!seen[i])c=[15,28,42];else{const t=tiles[i];c=t===DEEP?[27,111,168]:t===SHALLOW?[58,166,216]:t===SAND?[232,213,154]:[111,191,74];}d[i*4]=c[0];d[i*4+1]=c[1];d[i*4+2]=c[2];d[i*4+3]=255;}
   mmo.putImageData(img,0,0);mm.imageSmoothingEnabled=false;mm.clearRect(0,0,mmC.width,mmC.height);mm.drawImage(mmOff,0,0,mmC.width,mmC.height);
@@ -1519,19 +1519,22 @@ function drawSpaceMini(){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#0
 // =============================================================================
 
 // ================= ФУТБОЛ: Аргентина vs Англія (ідея Кості) =================
-const MATCH={w:820,h:520,goalH:170};
-let mBall={x:410,y:260,vx:0,vy:0},mGoalie={x:780,y:260},mBot={x:520,y:260};
+const MATCH={w:820,h:520,goalH:200};
+let mBall={x:410,y:260,vx:0,vy:0},mBots=[];
 function matchTransform(){const sc=Math.min(vw/(MATCH.w+30),vh/(MATCH.h+30));return{sc,offx:(vw-MATCH.w*sc)/2,offy:(vh-MATCH.h*sc)/2};}
+function matchReset(){mBall={x:MATCH.w*0.62,y:MATCH.h/2,vx:0,vy:0,_live:false};player.x=70;player.y=MATCH.h/2;mBots=[{x:MATCH.w*0.6,y:MATCH.h/2-70},{x:MATCH.w*0.68,y:MATCH.h/2+70}];}
 function startMatch(){st.scene='match';st.running=true;st.over=false;st.matchYou=0;st.matchEng=0;st.cloth=NEED_CLOTH;
-  player.x=170;player.y=MATCH.h/2;player.dir='right';player.moving=false;player.mtx=player.mty=null;player.anim=0;
-  mBall={x:MATCH.w/2,y:MATCH.h/2,vx:0,vy:0};mGoalie={x:MATCH.w-38,y:MATCH.h/2};mBot={x:MATCH.w*0.62,y:MATCH.h/2};
+  player.dir='right';player.moving=false;player.mtx=player.mty=null;player.anim=0;matchReset();
   freeCam=false;floats.length=0;ui.quest='';ui.hint='';ui.time=-1;layoutHud();
   $('start').hidden=true;$('menu').hidden=true;
-  toast('⚽ Забий 3 голи Англії! Штовхай мʼяч у праві ворота 🥅',4);}
-function matchGoal(){st.matchYou++;sfx('craft');floats.push({x:mBall.x,y:mBall.y-20,s:'ГОЛ! ⚽',t:0});
-  mBall={x:MATCH.w/2,y:MATCH.h/2,vx:0,vy:0};player.x=170;player.y=MATCH.h/2;mGoalie.y=MATCH.h/2;mBot.x=MATCH.w*0.62;mBot.y=MATCH.h/2;
-  if(st.matchYou>=3){EUR=SA_CFG;COUNTRIES=SA_COUNTRIES;BRIDGES=SA_BRIDGES;st.scene='europe';st.euSeen['ar']=true;const ar=SA_COUNTRIES.find(c=>c.id==='ar');player.x=ar.cx;player.y=ar.cy;player.mtx=player.mty=null;freeCam=false;focus.x=player.x;focus.y=player.y;ui.quest='';ui.hint='';ui.time=-1;layoutHud();sfx('win');toast('Ти переміг Англію 3:0! 🏆⚽ Аргентина пройдена',3.6);}
-  else toast('ГОЛ! ⚽ Рахунок '+st.matchYou+':0 — ще '+(3-st.matchYou),2.4);}
+  toast('🧤 Ти — воротар! Англія бʼє мʼяч у кутки. Відбий 3 рази!',4.2);}
+function matchSave(){st.matchYou++;sfx('craft');floats.push({x:player.x+18,y:player.y-18,s:'СЕЙВ! 🧤',t:0});
+  if(st.matchYou>=3){EUR=SA_CFG;COUNTRIES=SA_COUNTRIES;BRIDGES=SA_BRIDGES;st.scene='europe';st.euSeen['ar']=true;const ar=SA_COUNTRIES.find(c=>c.id==='ar');player.x=ar.cx;player.y=ar.cy;player.mtx=player.mty=null;freeCam=false;focus.x=player.x;focus.y=player.y;ui.quest='';ui.hint='';ui.time=-1;layoutHud();sfx('win');toast('3 сейви! Ти переміг Англію! 🏆🧤 Аргентина пройдена',3.6);}
+  else toast('Сейв! 🧤 '+st.matchYou+'/3',1.8);}
+function matchConcede(){st.matchEng++;sfx('nope');floats.push({x:34,y:MATCH.h/2,s:'Гол Англії 😟',t:0});
+  if(st.matchEng>=3){toast('Англія забила 3 😅 Спробуй ще!',3);st.matchYou=0;st.matchEng=0;}
+  else toast('Пропустив! Англія '+st.matchEng+':3',2.2);
+  matchReset();}
 function updateMatch(dt){
   let dx=0,dy=0;
   const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0),ky=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0);
@@ -1539,16 +1542,19 @@ function updateMatch(dt){
   else if(player.mtx!=null){const gx=player.mtx-player.x,gy=player.mty-player.y,gl=Math.hypot(gx,gy);if(gl>4){dx=gx/gl;dy=gy/gl;}else player.mtx=player.mty=null;}
   const len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}player.moving=len>0.1;
   if(player.moving){player.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');player.anim+=dt*9;}
-  player.x=clamp(player.x+dx*160*dt,14,MATCH.w-14);player.y=clamp(player.y+dy*160*dt,14,MATCH.h-14);
-  if(Math.hypot(player.x-mBall.x,player.y-mBall.y)<24){const a=Math.atan2(mBall.y-player.y,mBall.x-player.x);mBall.vx=Math.cos(a)*360;mBall.vy=Math.sin(a)*360;}
-  mGoalie.y+=(clamp(mBall.y,MATCH.h/2-MATCH.goalH/2,MATCH.h/2+MATCH.goalH/2)-mGoalie.y)*3.4*dt;
-  if(Math.hypot(mGoalie.x-mBall.x,mGoalie.y-mBall.y)<24){const a=Math.atan2(mBall.y-mGoalie.y,mBall.x-mGoalie.x);mBall.vx=-Math.abs(Math.cos(a)*260)-100;mBall.vy=Math.sin(a)*260;}
-  {const a=Math.atan2(mBall.y-mBot.y,mBall.x-mBot.x);mBot.x+=Math.cos(a)*62*dt;mBot.y+=Math.sin(a)*62*dt;if(Math.hypot(mBot.x-mBall.x,mBot.y-mBall.y)<22){mBall.vx=-220;mBall.vy=(mBall.y-MATCH.h/2)*1.1;}}
-  mBall.x+=mBall.vx*dt;mBall.y+=mBall.vy*dt;mBall.vx*=0.975;mBall.vy*=0.975;
-  if(mBall.y<12){mBall.y=12;mBall.vy*=-0.6;}if(mBall.y>MATCH.h-12){mBall.y=MATCH.h-12;mBall.vy*=-0.6;}
-  if(mBall.x<12){mBall.x=12;mBall.vx*=-0.6;}
+  player.x=clamp(player.x+dx*185*dt,14,MATCH.w-14);player.y=clamp(player.y+dy*185*dt,14,MATCH.h-14);
   const gTop=MATCH.h/2-MATCH.goalH/2,gBot=MATCH.h/2+MATCH.goalH/2;
-  if(mBall.x>MATCH.w-14){if(mBall.y>gTop&&mBall.y<gBot){matchGoal();return;}else{mBall.x=MATCH.w-14;mBall.vx*=-0.6;}}
+  // воротар ловить мʼяч
+  if(Math.hypot(player.x-mBall.x,player.y-mBall.y)<26){mBall.vx=320;mBall.vy=rand(-80,80);if(mBall._live){mBall._live=false;matchSave();return;}}
+  // боти: найближчий веде мʼяч і бʼє в куток; інший стає по центру
+  let near=mBots[0],nd=1e9;for(const b of mBots){const d=Math.hypot(b.x-mBall.x,b.y-mBall.y);if(d<nd){nd=d;near=b;}}
+  for(const b of mBots){if(b===near){const a=Math.atan2(mBall.y-b.y,mBall.x-b.x);b.x+=Math.cos(a)*90*dt;b.y+=Math.sin(a)*90*dt;
+      if(!mBall._live&&Math.hypot(b.x-mBall.x,b.y-mBall.y)<22&&mBall.x>MATCH.w*0.35){const corner=Math.random()<0.5?gTop+16:gBot-16;const sa=Math.atan2(corner-mBall.y,8-mBall.x),sp=280+Math.random()*90;mBall.vx=Math.cos(sa)*sp;mBall.vy=Math.sin(sa)*sp;mBall._live=true;}}
+    else{b.x+=((MATCH.w*0.62)-b.x)*0.7*dt;b.y+=((MATCH.h/2)-b.y)*0.7*dt;}}
+  mBall.x+=mBall.vx*dt;mBall.y+=mBall.vy*dt;mBall.vx*=0.985;mBall.vy*=0.985;
+  if(mBall.y<12){mBall.y=12;mBall.vy*=-0.6;}if(mBall.y>MATCH.h-12){mBall.y=MATCH.h-12;mBall.vy*=-0.6;}
+  if(mBall.x>MATCH.w-12){mBall.x=MATCH.w-12;mBall.vx*=-0.6;}
+  if(mBall.x<14){if(mBall.y>gTop&&mBall.y<gBot){matchConcede();return;}else{mBall.x=14;mBall.vx*=-0.6;if(mBall._live){mBall._live=false;matchSave();return;}}}
   for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.4)floats.splice(i,1);}}
 function drawMatch(now){
   const t=matchTransform(),tsec=now/1000;
@@ -1559,9 +1565,11 @@ function drawMatch(now){
   ctx.beginPath();ctx.moveTo(MATCH.w/2,6);ctx.lineTo(MATCH.w/2,MATCH.h-6);ctx.stroke();
   ctx.beginPath();ctx.arc(MATCH.w/2,MATCH.h/2,58,0,Math.PI*2);ctx.stroke();
   const gTop=MATCH.h/2-MATCH.goalH/2;
-  ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.strokeRect(MATCH.w-8,gTop,14,MATCH.goalH);ctx.strokeRect(-6,gTop,14,MATCH.goalH);
+  ctx.lineWidth=5;ctx.strokeStyle='#fff';ctx.strokeRect(MATCH.w-8,gTop,14,MATCH.goalH);
+  ctx.strokeStyle='#4aa3e0';ctx.strokeRect(-6,gTop,14,MATCH.goalH);
+  ctx.font='700 13px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#bfe3f5';ctx.fillText('🧤 Твої ворота',64,gTop-8);
   const guy=(x,y,col)=>{ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(x,y+12,8,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=col;ctx.fillRect(x-5,y-8,10,15);ctx.fillStyle='#e8b98a';ctx.beginPath();ctx.arc(x,y-13,5,0,Math.PI*2);ctx.fill();};
-  guy(mGoalie.x,mGoalie.y,'#c8102e');guy(mBot.x,mBot.y,'#e03a3a');
+  for(const b of mBots)guy(b.x,b.y,'#e03a3a');
   drawPlayer(tsec);
   ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(mBall.x,mBall.y,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#111';ctx.beginPath();ctx.arc(mBall.x,mBall.y,3.2,0,Math.PI*2);ctx.fill();
   ctx.font='700 14px Rubik, sans-serif';ctx.textAlign='center';for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-.8)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0a1020';ctx.fillText(f.s,f.x+1,f.y-f.t*26+1);ctx.fillStyle='#fff';ctx.fillText(f.s,f.x,f.y-f.t*26);}ctx.globalAlpha=1;}
