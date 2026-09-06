@@ -375,7 +375,7 @@ const player={x:0,y:0,dir:'down',moving:false,anim:0,hunger:100,thirst:100,hurt:
 const marker={x:0,y:0,t:9,kind:'go'};
 const inv={wood:0,fiber:0,axe:0};
 const invested={wood:0,fiber:0};
-const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false,coco:0,euVisited:0,euWon:false,euSeen:{},parts:0,planets:0,planetsSeen:{},spaceWon:false,hasSword:false,snakesKilled:0,saWon:false};
+const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false,coco:0,euVisited:0,euWon:false,euSeen:{},parts:0,planets:0,planetsSeen:{},spaceWon:false,hasSword:false,snakesKilled:0,saWon:false,matchYou:0,matchEng:0};
 const keys={};
 const SEA={w:1600,startX:800,startY:3500,shoreY:320};
 const sharks=[],seaFish=[],wakes=[],seaCoco=[];
@@ -462,7 +462,7 @@ const SA_COUNTRIES=[
   {id:'py',name:'Парагвай', cx:1080,cy:1450,rx:130,ry:130,tint:'#7cbb60',fact:'Парагвай — річки і ліси'},
   {id:'ch',name:'Чилі',     cx:640, cy:1600,rx:95, ry:360,tint:'#7ab85f',fact:'Чилі — найдовша країна вздовж гір ⛰️'},
   {id:'uy',name:'Уругвай',  cx:1190,cy:1660,rx:110,ry:110,tint:'#8cbf5e',fact:'Уругвай — пляжі і футбол ⚽'},
-  {id:'ar',name:'Аргентина',cx:900, cy:1980,rx:255,ry:430,tint:'#7cbb60',fact:'Аргентина — танго 💃 і стейки 🥩'},
+  {id:'ar',name:'Аргентина',cx:900, cy:1980,rx:255,ry:430,tint:'#7cbb60',fact:'Аргентина — танго 💃, стейки 🥩 і футбол ⚽',match:true},
 ];
 const SA_BRIDGES=[{cx:690,cy:760,rx:70,ry:70},{cx:1120,cy:1560,rx:80,ry:80}];
 SA_CFG.sword={x:1150,y:1050,taken:false};
@@ -539,6 +539,14 @@ function updateUI(){
     const qk='sp'+st.planets+(st.spaceHome?'h':'');
     if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">🚀</span><span>'+(st.spaceHome?'Приземлись на Землю 🌍':'Облети всі планети')+'</span></div>';questHint.innerHTML=`Планети: <b>${st.planets}/${PLANET_TARGET}</b> 🪐`;}
     let h=st.toastT>0?st.toastMsg:(st.spaceHome?'Лети на Землю 🌍 → Південна Америка':'Лети до планет 🪐 (обминай Сонце ☀️)');
+    if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
+    return;
+  }
+  if(st.scene==='match'){
+    const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
+    const qk='m'+st.matchYou;
+    if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">⚽</span><span>Обіграй Англію</span></div>';questHint.innerHTML=`Рахунок: <b>Ти ${st.matchYou} : 0 Англія</b> ⚽ (забий 3)`;}
+    let h=st.toastT>0?st.toastMsg:'Підійди до мʼяча і штовхай його у праві ворота 🥅';
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -631,6 +639,7 @@ function update(dt){
   if(st.scene==='europe'){updateEurope(dt);return;}
   if(st.scene==='inside'){updateInside(dt);return;}
   if(st.scene==='space'){updateSpace(dt);return;}
+  if(st.scene==='match'){updateMatch(dt);return;}
   // movement
   let dx=0,dy=0;
   const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
@@ -689,6 +698,7 @@ function drawWorld(now){
   if(st.scene==='europe'){drawEurope(now);return;}
   if(st.scene==='inside'){drawInside(now);return;}
   if(st.scene==='space'){drawSpace(now);return;}
+  if(st.scene==='match'){drawMatch(now);return;}
   const vwz=vw/zoom,vhz=vh/zoom;
   if(!freeCam){focus.x=player.x;focus.y=player.y;}
   cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
@@ -764,6 +774,7 @@ function drawMinimap(){
   if(st.scene==='europe'){drawEuropeMini();return;}
   if(st.scene==='inside'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#17283a';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#f5ecd6';mm.font='700 12px Rubik, sans-serif';mm.textAlign='center';mm.fillText('🚪 Усередині',mmC.width/2,mmC.height/2+4);return;}
   if(st.scene==='space'){drawSpaceMini();return;}
+  if(st.scene==='match'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#0d2a12';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#fff';mm.font='700 12px Rubik, sans-serif';mm.textAlign='center';mm.fillText('⚽ Ти '+st.matchYou+':0',mmC.width/2,mmC.height/2+4);return;}
   const img=mmo.createImageData(W,H),d=img.data;
   for(let i=0;i<W*H;i++){let c;if(!seen[i])c=[15,28,42];else{const t=tiles[i];c=t===DEEP?[27,111,168]:t===SHALLOW?[58,166,216]:t===SAND?[232,213,154]:[111,191,74];}d[i*4]=c[0];d[i*4+1]=c[1];d[i*4+2]=c[2];d[i*4+3]=255;}
   mmo.putImageData(img,0,0);mm.imageSmoothingEnabled=false;mm.clearRect(0,0,mmC.width,mmC.height);mm.drawImage(mmOff,0,0,mmC.width,mmC.height);
@@ -780,7 +791,7 @@ function layoutHud(){const isl=st.scene==='island';
   $('food').hidden=!isl;$('thirst').hidden=!isl;$('inv').hidden=!isl;
   const lb=$('listBtn');if(lb)lb.hidden=!(st.scene==='europe'||st.scene==='space');
   const ab=$('airportBtn');if(ab)ab.hidden=false;
-  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?(EUR.id==='asia'?'Азія 🌏':EUR.id==='sa'?'Пд.Америка 🌎':'Європа 🗺️'):st.scene==='inside'?'Усередині 🚪':st.scene==='space'?'Космос 🚀':'Мапа острова';}
+  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?(EUR.id==='asia'?'Азія 🌏':EUR.id==='sa'?'Пд.Америка 🌎':'Європа 🗺️'):st.scene==='inside'?'Усередині 🚪':st.scene==='space'?'Космос 🚀':st.scene==='match'?'⚽ Матч':'Мапа острова';}
 function startSea(){
   st.scene='sea';st.running=true;st.over=false;st.won=true;st.seaWon=false;st.seaProg=0;st.seaInv=1.2;st.time=0;st.toastT=0;
   player.x=SEA.startX;player.y=SEA.startY;player.dir='up';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
@@ -1507,6 +1518,55 @@ function drawSpaceMini(){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#0
   mm.fillStyle='#fff';mm.fillRect(player.x*kx-2,player.y*ky-2,4,4);}
 // =============================================================================
 
+// ================= ФУТБОЛ: Аргентина vs Англія (ідея Кості) =================
+const MATCH={w:820,h:520,goalH:170};
+let mBall={x:410,y:260,vx:0,vy:0},mGoalie={x:780,y:260},mBot={x:520,y:260};
+function matchTransform(){const sc=Math.min(vw/(MATCH.w+30),vh/(MATCH.h+30));return{sc,offx:(vw-MATCH.w*sc)/2,offy:(vh-MATCH.h*sc)/2};}
+function startMatch(){st.scene='match';st.running=true;st.over=false;st.matchYou=0;st.matchEng=0;st.cloth=NEED_CLOTH;
+  player.x=170;player.y=MATCH.h/2;player.dir='right';player.moving=false;player.mtx=player.mty=null;player.anim=0;
+  mBall={x:MATCH.w/2,y:MATCH.h/2,vx:0,vy:0};mGoalie={x:MATCH.w-38,y:MATCH.h/2};mBot={x:MATCH.w*0.62,y:MATCH.h/2};
+  freeCam=false;floats.length=0;ui.quest='';ui.hint='';ui.time=-1;layoutHud();
+  $('start').hidden=true;$('menu').hidden=true;
+  toast('⚽ Забий 3 голи Англії! Штовхай мʼяч у праві ворота 🥅',4);}
+function matchGoal(){st.matchYou++;sfx('craft');floats.push({x:mBall.x,y:mBall.y-20,s:'ГОЛ! ⚽',t:0});
+  mBall={x:MATCH.w/2,y:MATCH.h/2,vx:0,vy:0};player.x=170;player.y=MATCH.h/2;mGoalie.y=MATCH.h/2;mBot.x=MATCH.w*0.62;mBot.y=MATCH.h/2;
+  if(st.matchYou>=3){EUR=SA_CFG;COUNTRIES=SA_COUNTRIES;BRIDGES=SA_BRIDGES;st.scene='europe';st.euSeen['ar']=true;const ar=SA_COUNTRIES.find(c=>c.id==='ar');player.x=ar.cx;player.y=ar.cy;player.mtx=player.mty=null;freeCam=false;focus.x=player.x;focus.y=player.y;ui.quest='';ui.hint='';ui.time=-1;layoutHud();sfx('win');toast('Ти переміг Англію 3:0! 🏆⚽ Аргентина пройдена',3.6);}
+  else toast('ГОЛ! ⚽ Рахунок '+st.matchYou+':0 — ще '+(3-st.matchYou),2.4);}
+function updateMatch(dt){
+  let dx=0,dy=0;
+  const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0),ky=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0);
+  if(kx||ky){player.mtx=player.mty=null;dx=kx;dy=ky;}
+  else if(player.mtx!=null){const gx=player.mtx-player.x,gy=player.mty-player.y,gl=Math.hypot(gx,gy);if(gl>4){dx=gx/gl;dy=gy/gl;}else player.mtx=player.mty=null;}
+  const len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}player.moving=len>0.1;
+  if(player.moving){player.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');player.anim+=dt*9;}
+  player.x=clamp(player.x+dx*160*dt,14,MATCH.w-14);player.y=clamp(player.y+dy*160*dt,14,MATCH.h-14);
+  if(Math.hypot(player.x-mBall.x,player.y-mBall.y)<24){const a=Math.atan2(mBall.y-player.y,mBall.x-player.x);mBall.vx=Math.cos(a)*360;mBall.vy=Math.sin(a)*360;}
+  mGoalie.y+=(clamp(mBall.y,MATCH.h/2-MATCH.goalH/2,MATCH.h/2+MATCH.goalH/2)-mGoalie.y)*3.4*dt;
+  if(Math.hypot(mGoalie.x-mBall.x,mGoalie.y-mBall.y)<24){const a=Math.atan2(mBall.y-mGoalie.y,mBall.x-mGoalie.x);mBall.vx=-Math.abs(Math.cos(a)*260)-100;mBall.vy=Math.sin(a)*260;}
+  {const a=Math.atan2(mBall.y-mBot.y,mBall.x-mBot.x);mBot.x+=Math.cos(a)*62*dt;mBot.y+=Math.sin(a)*62*dt;if(Math.hypot(mBot.x-mBall.x,mBot.y-mBall.y)<22){mBall.vx=-220;mBall.vy=(mBall.y-MATCH.h/2)*1.1;}}
+  mBall.x+=mBall.vx*dt;mBall.y+=mBall.vy*dt;mBall.vx*=0.975;mBall.vy*=0.975;
+  if(mBall.y<12){mBall.y=12;mBall.vy*=-0.6;}if(mBall.y>MATCH.h-12){mBall.y=MATCH.h-12;mBall.vy*=-0.6;}
+  if(mBall.x<12){mBall.x=12;mBall.vx*=-0.6;}
+  const gTop=MATCH.h/2-MATCH.goalH/2,gBot=MATCH.h/2+MATCH.goalH/2;
+  if(mBall.x>MATCH.w-14){if(mBall.y>gTop&&mBall.y<gBot){matchGoal();return;}else{mBall.x=MATCH.w-14;mBall.vx*=-0.6;}}
+  for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.4)floats.splice(i,1);}}
+function drawMatch(now){
+  const t=matchTransform(),tsec=now/1000;
+  ctx.setTransform(dpr*t.sc,0,0,dpr*t.sc,t.offx*dpr,t.offy*dpr);
+  ctx.fillStyle='#08210d';ctx.fillRect(-2000,-2000,6000,6000);
+  for(let i=0;i*82<MATCH.w;i++){ctx.fillStyle=i%2?'#3f9a3f':'#379037';ctx.fillRect(i*82,0,82,MATCH.h);}
+  ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=3;ctx.strokeRect(6,6,MATCH.w-12,MATCH.h-12);
+  ctx.beginPath();ctx.moveTo(MATCH.w/2,6);ctx.lineTo(MATCH.w/2,MATCH.h-6);ctx.stroke();
+  ctx.beginPath();ctx.arc(MATCH.w/2,MATCH.h/2,58,0,Math.PI*2);ctx.stroke();
+  const gTop=MATCH.h/2-MATCH.goalH/2;
+  ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.strokeRect(MATCH.w-8,gTop,14,MATCH.goalH);ctx.strokeRect(-6,gTop,14,MATCH.goalH);
+  const guy=(x,y,col)=>{ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(x,y+12,8,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=col;ctx.fillRect(x-5,y-8,10,15);ctx.fillStyle='#e8b98a';ctx.beginPath();ctx.arc(x,y-13,5,0,Math.PI*2);ctx.fill();};
+  guy(mGoalie.x,mGoalie.y,'#c8102e');guy(mBot.x,mBot.y,'#e03a3a');
+  drawPlayer(tsec);
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(mBall.x,mBall.y,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#111';ctx.beginPath();ctx.arc(mBall.x,mBall.y,3.2,0,Math.PI*2);ctx.fill();
+  ctx.font='700 14px Rubik, sans-serif';ctx.textAlign='center';for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-.8)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0a1020';ctx.fillText(f.s,f.x+1,f.y-f.t*26+1);ctx.fillStyle='#fff';ctx.fillText(f.s,f.x,f.y-f.t*26);}ctx.globalAlpha=1;}
+// =============================================================================
+
 // ---------- input ----------
 window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;if(!st.running&&!st.over&&!$('start').hidden&&e.code==='Enter')startGame();});
 window.addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -1543,12 +1603,14 @@ function tapWorld(clientX,clientY){
       if(EUR.id==='asia'&&c.id==='jp'){
         if(st.parts>=EUR.parts.length&&st.euVisited>=COUNTRIES.length){openRocket();return;}
         toast(st.euVisited<COUNTRIES.length?('Спершу знайди ВСІ країни Азії! '+st.euVisited+'/'+COUNTRIES.length+' 🌏'):('Збери всі деталі ракети 🔧 '+st.parts+'/'+EUR.parts.length),3.2);player.mtx=player.mty=null;return;}
+      if(c.match){startMatch(c);player.mtx=player.mty=null;return;}
       if(c.q){openQuestion(c);player.mtx=player.mty=null;return;}
       openInside(c);player.mtx=player.mty=null;return;}}
     player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;
   }
   if(st.scene==='inside'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
   if(st.scene==='space'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
+  if(st.scene==='match'){const t=matchTransform();player.mtx=(clientX-rect.left-t.offx)/t.sc;player.mty=(clientY-rect.top-t.offy)/t.sc;return;}
   // fallen items first — they sit near the palm base, so they take priority over the tree
   let dp=null,dd=32;for(const d of drops){const dist=Math.hypot(d.x-wx,d.y-wy);if(dist<dd){dd=dist;dp=d;}}
   if(dp){menuCtx={type:'drop',obj:dp};
