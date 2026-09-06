@@ -264,6 +264,17 @@
   </div>
 </div>
 
+<div id="question" class="overlay" hidden>
+  <div class="panel" style="text-align:center">
+    <div class="eyebrow" id="questionCountry">Країна</div>
+    <h2 style="font-size:clamp(13px,3.4vw,20px)" id="questionText">?</h2>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="qYes">Так</button>
+      <button class="btn" id="qNo" style="background:var(--panel-2);color:var(--cream);box-shadow:0 4px 0 var(--ink)">Ні</button>
+    </div>
+  </div>
+</div>
+
 <div id="checklist" class="overlay" hidden>
   <div class="panel">
     <div class="eyebrow" id="checklistTitle">Країни</div>
@@ -447,7 +458,7 @@ const SA_COUNTRIES=[
   {id:'co',name:'Колумбія', cx:620, cy:620, rx:190,ry:200,tint:'#8cbf5e',fact:'Колумбія — кава ☕ і джунглі'},
   {id:'ec',name:'Еквадор',  cx:470, cy:820, rx:120,ry:120,tint:'#7cbb60',fact:'Еквадор — прямо на екваторі 🌍'},
   {id:'pe',name:'Перу',     cx:600, cy:1080,rx:210,ry:230,tint:'#7ab85f',fact:'Перу — Мачу-Пікчу 🛕 і лами 🦙'},
-  {id:'bo',name:'Болівія',  cx:880, cy:1250,rx:180,ry:170,tint:'#8cbf5e',fact:'Болівія — біла соляна пустеля ✨'},
+  {id:'bo',name:'Болівія',  cx:880, cy:1250,rx:180,ry:170,tint:'#8cbf5e',fact:'Болівія — біла соляна пустеля ✨',q:'Ти б пожертвував собою заради куска хліба?'},
   {id:'py',name:'Парагвай', cx:1080,cy:1450,rx:130,ry:130,tint:'#7cbb60',fact:'Парагвай — річки і ліси'},
   {id:'ch',name:'Чилі',     cx:640, cy:1600,rx:95, ry:360,tint:'#7ab85f',fact:'Чилі — найдовша країна вздовж гір ⛰️'},
   {id:'uy',name:'Уругвай',  cx:1190,cy:1660,rx:110,ry:110,tint:'#8cbf5e',fact:'Уругвай — пляжі і футбол ⚽'},
@@ -965,6 +976,8 @@ function openInside(c){st.insideCountry=c;st.euReturn={x:player.x,y:player.y};st
   player.x=IN.w/2;player.y=IN.h-IN.wall-28;player.dir='up';player.moving=false;player.mtx=player.mty=null;
   freeCam=false;focus.x=player.x;focus.y=player.y;ui.quest='';ui.hint='';ui.time=-1;layoutHud();sfx('eat');
   toast('Ти всередині! Роздивись і вийди через двері 🚪',3);}
+function openQuestion(c){st.qCountry=c;st.running=false;$('questionCountry').textContent=c.name+' '+(EMOJI[c.id]||'🏳️');$('questionText').textContent=c.q;$('question').hidden=false;sfx('eat');}
+function answerQuestion(yes){$('question').hidden=true;st.running=true;toast(yes?'Хоробро й добре ❤️ Ти справжній герой!':'Мудро 🙂 Головне — берегти й себе',3.2);}
 function exitInside(){st.scene='europe';const r=st.euReturn||{x:EUR.startX,y:EUR.startY};
   player.x=r.x;player.y=r.y+6;player.mtx=player.mty=null;player.dir='down';player.moving=false;
   freeCam=false;focus.x=player.x;focus.y=player.y;ui.quest='';ui.hint='';ui.time=-1;layoutHud();sfx('craft');}
@@ -1530,6 +1543,7 @@ function tapWorld(clientX,clientY){
       if(EUR.id==='asia'&&c.id==='jp'){
         if(st.parts>=EUR.parts.length&&st.euVisited>=COUNTRIES.length){openRocket();return;}
         toast(st.euVisited<COUNTRIES.length?('Спершу знайди ВСІ країни Азії! '+st.euVisited+'/'+COUNTRIES.length+' 🌏'):('Збери всі деталі ракети 🔧 '+st.parts+'/'+EUR.parts.length),3.2);player.mtx=player.mty=null;return;}
+      if(c.q){openQuestion(c);player.mtx=player.mty=null;return;}
       openInside(c);player.mtx=player.mty=null;return;}}
     player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;
   }
@@ -1582,6 +1596,8 @@ $('spaceRebirthBtn').addEventListener('click',()=>{$('spaceWin').hidden=true;sta
 $('saRebirthBtn').addEventListener('click',()=>{$('saWin').hidden=true;startGame();});
 $('listBtn').addEventListener('click',openChecklist);
 $('airportBtn').addEventListener('click',goToStart);
+$('qYes').addEventListener('click',()=>answerQuestion(true));
+$('qNo').addEventListener('click',()=>answerQuestion(false));
 $('checklistClose').addEventListener('click',()=>{$('checklist').hidden=true;st.running=true;});
 
 // ---------- loop ----------
