@@ -80,7 +80,15 @@
   .letter{background:var(--sand);color:var(--ink);padding:16px 18px;border-radius:4px;margin:14px 0;box-shadow:0 0 0 3px var(--ink)}
   .letter p,.letter ul{color:var(--ink)}
   .letter b{color:#7a3c00}
+  #listBtn{position:fixed;z-index:4;left:calc(12px + env(safe-area-inset-left));bottom:calc(84px + env(safe-area-inset-bottom));background:rgba(23,40,58,.92);color:var(--cream);border:2px solid var(--sand);box-shadow:0 0 0 3px var(--ink);border-radius:6px;padding:8px 12px;font:700 14px Rubik,sans-serif;cursor:pointer}
+  #listBtn:active{transform:translateY(2px)}
+  #checklistBody{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;text-align:left;max-height:52vh;overflow:auto;margin:10px 0 16px;padding-right:6px}
+  .clrow{display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap}
+  .clrow.done{color:var(--good)}
+  .clrow.todo{color:var(--muted)}
   @media (max-width:640px){
+    #checklistBody{grid-template-columns:1fr 1fr;font-size:12px}
+    #listBtn{bottom:calc(70px + env(safe-area-inset-bottom));padding:6px 10px;font-size:12px}
     #quest{top:auto;bottom:calc(150px + env(safe-area-inset-bottom));font-size:13px;padding:8px 10px}
     #mini canvas{width:96px;height:59px}
     .bar-row .bar{width:92px}
@@ -120,6 +128,7 @@
 </div>
 
 <div id="menu" hidden></div>
+<button id="listBtn" hidden>📋 Країни</button>
 
 <div id="start" class="overlay">
   <div class="panel">
@@ -237,6 +246,15 @@
   </div>
 </div>
 
+<div id="checklist" class="overlay" hidden>
+  <div class="panel">
+    <div class="eyebrow" id="checklistTitle">Країни</div>
+    <h2>Зібрано: <span id="checklistCount">0/0</span></h2>
+    <div id="checklistBody"></div>
+    <div class="row" style="justify-content:center"><button class="btn" id="checklistClose">Закрити ✖</button></div>
+  </div>
+</div>
+
 <script>
 (() => {
 'use strict';
@@ -334,7 +352,7 @@ const SEA={w:1600,startX:800,startY:3500,shoreY:320};
 const sharks=[],seaFish=[],wakes=[],seaCoco=[];
 // ---- Європа (частина 3) ----
 const EUROPE_CFG={w:2800,h:2200,startX:920,startY:1090,ship:{x:710,y:1075},portal:{x:2560,y:650},id:'europe'};
-const ASIA_CFG={w:2600,h:1600,startX:320,startY:760,ship:{x:150,y:760},id:'asia'};
+const ASIA_CFG={w:3000,h:2100,startX:320,startY:760,ship:{x:150,y:760},id:'asia'};
 let EUR=EUROPE_CFG;   // активний регіон (функції читають EUR.*, COUNTRIES, BRIDGES)
 const EUROPE_COUNTRIES=[
   {id:'uk',name:'Британія',   cx:640, cy:520, rx:180,ry:240,tint:'#6fae5a',fact:'Британія — Біг-Бен 🕰️ і червоний автобус 🚌'},
@@ -372,9 +390,30 @@ const ASIA_COUNTRIES=[
   {id:'cn',name:'Китай',      cx:1520,cy:1000,rx:300,ry:270,tint:'#7ab85f',fact:'Китай — Велика стіна, панда 🐼 і пагоди'},
   {id:'in',name:'Індія',      cx:1230,cy:1360,rx:240,ry:200,tint:'#8cbf5e',fact:'Індія — Тадж-Махал 🕌 і слони 🐘'},
   {id:'kr',name:'Корея',      cx:2010,cy:1060,rx:135,ry:135,tint:'#7cbb60',fact:'Корея — пагоди і смачна локшина 🍜'},
-  {id:'jp',name:'Японія',     cx:2300,cy:880, rx:165,ry:230,tint:'#7ab85f',fact:'🍣 Японія — гора Фудзі 🗻 і суші. Тут будуємо ракету!'},
+  {id:'jp',name:'Японія',     cx:2360,cy:880, rx:165,ry:230,tint:'#7ab85f',fact:'🍣 Японія — гора Фудзі 🗻 і суші. Тут будуємо ракету!'},
+  // Центральна Азія
+  {id:'uz',name:'Узбекистан', cx:820, cy:1070,rx:145,ry:120,tint:'#8cbf5e',fact:'Узбекистан — стародавні мечеті і плов 🍲'},
+  {id:'tm',name:'Туркменістан',cx:600,cy:1160,rx:150,ry:135,tint:'#7cbb60',fact:'Туркменістан — пустеля і газ 🔥'},
+  {id:'tj',name:'Таджикистан',cx:1030,cy:1120,rx:95, ry:90, tint:'#7ab85f',fact:'Таджикистан — високі гори ⛰️'},
+  {id:'kg',name:'Киргизстан', cx:1150,cy:1000,rx:105,ry:90, tint:'#8cbf5e',fact:'Киргизстан — гори і юрти ⛺'},
+  // Індостан (субконтинент)
+  {id:'pk',name:'Пакистан',   cx:970, cy:1350,rx:150,ry:150,tint:'#7cbb60',fact:'Пакистан — гори і мечеті 🕌'},
+  {id:'np',name:'Непал',      cx:1340,cy:1230,rx:115,ry:62, tint:'#7ab85f',fact:'Непал — Еверест 🏔️, найвища гора світу'},
+  {id:'bd',name:'Бангладеш',  cx:1500,cy:1370,rx:92, ry:92, tint:'#8cbf5e',fact:'Бангладеш — річки і тигри 🐯'},
+  {id:'lk',name:'Шрі-Ланка',  cx:1310,cy:1630,rx:72, ry:82, tint:'#7cbb60',fact:'Шрі-Ланка — острів, чай і слони 🐘'},
+  // Індокитай
+  {id:'mm',name:'Мʼянма',     cx:1630,cy:1490,rx:110,ry:150,tint:'#7ab85f',fact:'Мʼянма — золоті пагоди ✨'},
+  {id:'th',name:'Таїланд',    cx:1800,cy:1580,rx:120,ry:140,tint:'#8cbf5e',fact:'Таїланд — храми, слони 🐘 і пляжі 🏖️'},
+  {id:'la',name:'Лаос',       cx:1850,cy:1400,rx:85, ry:115,tint:'#7cbb60',fact:'Лаос — джунглі і пагоди'},
+  {id:'kh',name:'Камбоджа',   cx:1930,cy:1620,rx:92, ry:88, tint:'#7ab85f',fact:'Камбоджа — храм Ангкор-Ват 🛕'},
+  {id:'vn',name:'Вʼєтнам',    cx:2040,cy:1470,rx:100,ry:185,tint:'#8cbf5e',fact:'Вʼєтнам — рисові поля 🌾 і бухти'},
+  // Морська Азія (ASEAN)
+  {id:'my',name:'Малайзія',   cx:1880,cy:1780,rx:140,ry:92, tint:'#7cbb60',fact:'Малайзія — башти-близнюки і джунглі'},
+  {id:'sg',name:'Сінгапур',   cx:1900,cy:1885,rx:46, ry:46, tint:'#7ab85f',fact:'Сінгапур — місто-сад 🌳 і лев-риба'},
+  {id:'id',name:'Індонезія',  cx:2120,cy:1900,rx:250,ry:150,tint:'#8cbf5e',fact:'Індонезія — багато островів і вулкани 🌋'},
+  {id:'ph',name:'Філіппіни',  cx:2320,cy:1560,rx:120,ry:180,tint:'#7cbb60',fact:'Філіппіни — 7000 островів 🏝️'},
 ];
-const ASIA_BRIDGES=[{cx:1860,cy:1030,rx:95,ry:75},{cx:2150,cy:970,rx:95,ry:75}]; // Китай↔Корея, Корея↔Японія
+const ASIA_BRIDGES=[{cx:1860,cy:1030,rx:95,ry:75},{cx:2150,cy:970,rx:95,ry:75},{cx:1250,cy:1010,rx:80,ry:75},{cx:2170,cy:1500,rx:100,ry:90}]; // Китай↔Корея, Корея↔Японія, Киргизстан↔Китай, Вʼєтнам↔Філіппіни
 ASIA_CFG.parts=[
   {x:870, y:820, kind:'metal', emoji:'🔩', got:false},
   {x:1240,y:620, kind:'fuel',  emoji:'⛽', got:false},
@@ -432,11 +471,11 @@ function updateUI(){
   if(st.scene==='europe'){
     const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
     const asia=EUR.id==='asia';
-    const qk=asia?('as'+st.parts):('eu'+st.euVisited);
+    const qk=asia?('as'+st.parts+'|'+st.euVisited):('eu'+st.euVisited);
     if(ui.quest!==qk){ui.quest=qk;
-      stepsEl.innerHTML='<div class="step cur"><span class="k">'+(asia?'🚀':'🗺️')+'</span><span>'+(asia?'Збери ракету, лети в Японію':'Обійди всю Європу')+'</span></div>';
-      questHint.innerHTML=asia?`Деталі ракети: <b>${st.parts}/${EUR.parts.length}</b> 🔧 · тоді в Японію 🍣`:`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
-    let h=st.toastT>0?st.toastMsg:(asia?'Збери деталі 🔩⛽⚙️🔺 і дійди до Японії 🍣':'Гуляй Європою! Тапни країну — дізнаєшся про неї');
+      stepsEl.innerHTML='<div class="step cur"><span class="k">'+(asia?'🚀':'🗺️')+'</span><span>'+(asia?'Знайди всі країни, тоді Японія 🍣':'Обійди всю Європу')+'</span></div>';
+      questHint.innerHTML=asia?`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🌏 · деталі ${st.parts}/${EUR.parts.length} 🔧`:`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
+    let h=st.toastT>0?st.toastMsg:(asia?'Знайди всі країни Азії і збери деталі 🔧':'Гуляй Європою! Тапни країну — дізнаєшся про неї');
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -692,6 +731,7 @@ function drawMinimap(){
 // ================= ЧАСТИНА 2: МОРЕ → ФРАНЦІЯ (за ідеєю Кості) =================
 function layoutHud(){const isl=st.scene==='island';
   $('food').hidden=!isl;$('thirst').hidden=!isl;$('inv').hidden=!isl;
+  const lb=$('listBtn');if(lb)lb.hidden=!(st.scene==='europe'||st.scene==='space');
   const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?(EUR.id==='asia'?'Азія 🌏':'Європа 🗺️'):st.scene==='inside'?'Усередині 🚪':st.scene==='space'?'Космос 🚀':'Мапа острова';}
 function startSea(){
   st.scene='sea';st.running=true;st.over=false;st.won=true;st.seaWon=false;st.seaProg=0;st.seaInv=1.2;st.time=0;st.toastT=0;
@@ -880,7 +920,8 @@ function inEll(x,y,c){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry;return dx*dx+dy*dy
 function europeLand(x,y){for(const c of COUNTRIES)if(inEll(x,y,c))return true;for(const b of BRIDGES)if(inEll(x,y,b))return true;return false;}
 function canStandEU(x,y){return europeLand(x-7,y+4)&&europeLand(x+7,y+4)&&europeLand(x,y-2);}
 function countryAt(x,y){let best=null,bd=Infinity;for(const c of COUNTRIES){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry,d=dx*dx+dy*dy;if(d<=1&&d<bd){bd=d;best=c;}}return best;}
-const EMOJI={fr:'🗼',it:'🍕',es:'🐂',de:'🥨',uk:'🕰️',nl:'🌷',gr:'🏛️',ua:'🌻',pl:'🏰',dk:'🧱',no:'⛵',se:'🐴',fi:'❄️',ee:'🏰',lv:'🌲',lt:'🏯',by:'🕊️',ro:'🦇',md:'🍇',bg:'🌹',tr:'🕌',pt:'🐓',lo:'🐻',be:'🧇',lu:'🏰',ru:'🌲',kz:'⛺',mn:'🐎',cn:'🐼',in:'🐘',kr:'🍜',jp:'🍣'};
+const EMOJI={fr:'🗼',it:'🍕',es:'🐂',de:'🥨',uk:'🕰️',nl:'🌷',gr:'🏛️',ua:'🌻',pl:'🏰',dk:'🧱',no:'⛵',se:'🐴',fi:'❄️',ee:'🏰',lv:'🌲',lt:'🏯',by:'🕊️',ro:'🦇',md:'🍇',bg:'🌹',tr:'🕌',pt:'🐓',lo:'🐻',be:'🧇',lu:'🏰',ru:'🌲',kz:'⛺',mn:'🐎',cn:'🐼',in:'🐘',kr:'🍜',jp:'🍣',
+  uz:'🕌',tm:'🔥',tj:'⛰️',kg:'⛺',pk:'🕌',np:'🏔️',bd:'🐯',lk:'🐘',mm:'✨',th:'🐘',la:'🛕',kh:'🛕',vn:'🌾',my:'🌴',sg:'🦁',id:'🌋',ph:'🏝️'};
 const IN={w:760,h:560,wall:26,doorW:100};
 function openInside(c){st.insideCountry=c;st.euReturn={x:player.x,y:player.y};st.scene='inside';
   player.x=IN.w/2;player.y=IN.h-IN.wall-28;player.dir='up';player.moving=false;player.mtx=player.mty=null;
@@ -948,6 +989,16 @@ function drawInside(now){
   for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-.8)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0f1c2a';ctx.fillText(f.s,f.x+1,f.y-f.t*26+1);ctx.fillStyle='#f5ecd6';ctx.fillText(f.s,f.x,f.y-f.t*26);}
   ctx.globalAlpha=1;}
 function goToStart(){st.running=false;st.over=false;st.scene='island';const ins=$('inside');if(ins)ins.hidden=true;layoutHud();$('start').hidden=false;sfx('craft');}
+function openChecklist(){
+  let items,title;
+  if(st.scene==='space'){title='🪐 Планети';items=PLANETS.filter(p=>!p.sun).map(p=>({name:p.name,emoji:'🪐',done:!!st.planetsSeen[p.id]}));}
+  else{const asia=EUR.id==='asia';title=asia?'🌏 Країни Азії':'🗺️ Країни Європи';items=COUNTRIES.map(c=>({name:c.name,emoji:EMOJI[c.id]||'🏳️',done:!!st.euSeen[c.id]}));}
+  $('checklistTitle').textContent=title;
+  const done=items.filter(i=>i.done).length;
+  $('checklistBody').innerHTML=items.map(i=>`<div class="clrow ${i.done?'done':'todo'}">${i.done?'✅':'⬜'} ${i.emoji} ${i.name}</div>`).join('');
+  $('checklistCount').textContent=done+'/'+items.length;
+  $('checklist').hidden=false;st.running=false;
+}
 function startEurope(){
   EUR=EUROPE_CFG;COUNTRIES=EUROPE_COUNTRIES;BRIDGES=EUROPE_BRIDGES;
   st.scene='europe';st.running=true;st.over=false;st.won=true;st.cloth=NEED_CLOTH;st.time=0;st.toastT=0;st.euWon=false;st.euSeen={};
@@ -1055,6 +1106,23 @@ function drawFlag(x,y,id){const w=30,h=20,lx=x-w/2;
     case 'in':Hb('#FF9933','#fff','#138808');ctx.strokeStyle='#000080';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(lx+w/2,y+h/2,3,0,Math.PI*2);ctx.stroke();break;
     case 'kr':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#CD2E3A';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,5,Math.PI,0);ctx.fill();ctx.fillStyle='#0047A0';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,5,0,Math.PI);ctx.fill();break;
     case 'jp':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#BC002D';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,6,0,Math.PI*2);ctx.fill();break;
+    case 'uz':Hb('#0099B5','#fff','#1EB53A');break;
+    case 'tm':ctx.fillStyle='#28ae66';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#c8102e';ctx.fillRect(lx+3,y,5,h);break;
+    case 'tj':Hb('#cc0000','#fff','#006600');break;
+    case 'kg':ctx.fillStyle='#e8112d';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#ffef00';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,4.5,0,Math.PI*2);ctx.fill();break;
+    case 'pk':ctx.fillStyle='#01411C';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#fff';ctx.fillRect(lx,y,w*0.28,h);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(lx+w*0.62,y+h/2,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#01411C';ctx.beginPath();ctx.arc(lx+w*0.66,y+h/2,4,0,Math.PI*2);ctx.fill();break;
+    case 'np':ctx.fillStyle='#DC143C';ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx+w*0.7,y+h*0.45);ctx.lineTo(lx,y+h*0.5);ctx.closePath();ctx.moveTo(lx,y+h*0.5);ctx.lineTo(lx+w*0.7,y+h*0.95);ctx.lineTo(lx,y+h);ctx.closePath();ctx.fill();ctx.fillStyle='#003893';ctx.lineWidth=1;break;
+    case 'bd':ctx.fillStyle='#006a4e';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#f42a41';ctx.beginPath();ctx.arc(lx+w*0.44,y+h/2,5,0,Math.PI*2);ctx.fill();break;
+    case 'lk':ctx.fillStyle='#FFB700';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#8D153A';ctx.fillRect(lx+w*0.42,y,w*0.58,h);ctx.fillStyle='#00534E';ctx.fillRect(lx,y,w*0.14,h);break;
+    case 'mm':Hb('#FECB00','#34B233','#EA2839');ctx.fillStyle='#fff';ctx.font='700 10px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+w/2,y+h/2+3.5);break;
+    case 'th':{const b=h/5;ctx.fillStyle='#A51931';ctx.fillRect(lx,y,w,b);ctx.fillRect(lx,y+4*b,w,b);ctx.fillStyle='#F4F5F8';ctx.fillRect(lx,y+b,w,b);ctx.fillRect(lx,y+3*b,w,b);ctx.fillStyle='#2D2A4A';ctx.fillRect(lx,y+2*b,w,b);break;}
+    case 'la':ctx.fillStyle='#CE1126';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#002868';ctx.fillRect(lx,y+h*0.28,w,h*0.44);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,4.5,0,Math.PI*2);ctx.fill();break;
+    case 'kh':ctx.fillStyle='#032ea1';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#e00025';ctx.fillRect(lx,y+h*0.3,w,h*0.4);ctx.fillStyle='#fff';ctx.fillRect(lx+w/2-5,y+h*0.38,10,h*0.24);break;
+    case 'vn':ctx.fillStyle='#da251d';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#ff0';ctx.font='700 13px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+w/2,y+h/2+4.5);break;
+    case 'my':for(let i=0;i<7;i++){ctx.fillStyle=i%2?'#fff':'#cc0001';ctx.fillRect(lx,y+i*(h/7),w,h/7);}ctx.fillStyle='#010066';ctx.fillRect(lx,y,w*0.5,h*0.57);ctx.fillStyle='#ffcc00';ctx.font='700 8px Rubik';ctx.textAlign='center';ctx.fillText('☾',lx+w*0.22,y+h*0.38);break;
+    case 'sg':ctx.fillStyle='#EF3340';ctx.fillRect(lx,y,w,h/2);ctx.fillStyle='#fff';ctx.fillRect(lx,y+h/2,w,h/2);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(lx+w*0.24,y+h*0.28,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#EF3340';ctx.beginPath();ctx.arc(lx+w*0.3,y+h*0.28,4,0,Math.PI*2);ctx.fill();break;
+    case 'id':ctx.fillStyle='#ce1126';ctx.fillRect(lx,y,w,h/2);ctx.fillStyle='#fff';ctx.fillRect(lx,y+h/2,w,h/2);break;
+    case 'ph':ctx.fillStyle='#0038A8';ctx.fillRect(lx,y,w,h/2);ctx.fillStyle='#CE1126';ctx.fillRect(lx,y+h/2,w,h/2);ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx+w*0.42,y+h/2);ctx.lineTo(lx,y+h);ctx.closePath();ctx.fill();ctx.fillStyle='#FCD116';ctx.font='700 8px Rubik';ctx.textAlign='center';ctx.fillText('☀',lx+w*0.13,y+h/2+3);break;
     default:ctx.fillStyle='#ccc';ctx.fillRect(lx,y,w,h);
   }
   ctx.strokeStyle='#0f1c2a';ctx.lineWidth=1;ctx.strokeRect(lx,y,w,h);
@@ -1093,6 +1161,19 @@ function drawLandmark(c,tsec){const x=c.cx,y=c.cy;
     case 'in':euMosque(x,y);break;
     case 'kr':euPagoda(x,y,'#2e7d8c');break;
     case 'jp':euFuji(x,y);break;
+    case 'uz':case 'tm':case 'pk':case 'bd':euMosque(x,y);break;
+    case 'tj':case 'kg':euYurt(x,y);break;
+    case 'np':euFuji(x,y);break;
+    case 'lk':euPagoda(x,y,'#c9a24a');break;
+    case 'mm':euPagoda(x,y,'#e0b93a');break;
+    case 'th':euPagoda(x,y,'#c0392b');break;
+    case 'la':euPagoda(x,y,'#2e7d8c');break;
+    case 'kh':euTemple(x,y);break;
+    case 'vn':euPagoda(x,y,'#d4b03a');break;
+    case 'my':euTower(x,y,'#3a6db0');break;
+    case 'sg':euTower(x,y,'#c0392b');break;
+    case 'id':euTemple(x,y);break;
+    case 'ph':euTower(x,y,'#2e8b57');break;
   }
 }
 function shadow(x,y,r){ctx.fillStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.ellipse(x,y+4,r,r*0.24,0,0,Math.PI*2);ctx.fill();}
@@ -1334,7 +1415,9 @@ function tapWorld(clientX,clientY){
     if(EUR.portal&&Math.hypot(EUR.portal.x-wx,EUR.portal.y-wy)<52){startAsia();return;}
     if(Math.hypot(EUR.ship.x-wx,EUR.ship.y-wy)<50){if(EUR.id==='asia')startEurope();else goToStart();return;}
     for(const c of COUNTRIES){if(Math.abs(wx-c.cx)<48&&wy<c.cy+24&&wy>c.cy-100){
-      if(EUR.id==='asia'&&c.id==='jp'&&st.parts>=(EUR.parts?EUR.parts.length:99)){openRocket();return;}
+      if(EUR.id==='asia'&&c.id==='jp'){
+        if(st.parts>=EUR.parts.length&&st.euVisited>=COUNTRIES.length){openRocket();return;}
+        toast(st.euVisited<COUNTRIES.length?('Спершу знайди ВСІ країни Азії! '+st.euVisited+'/'+COUNTRIES.length+' 🌏'):('Збери всі деталі ракети 🔧 '+st.parts+'/'+EUR.parts.length),3.2);player.mtx=player.mty=null;return;}
       openInside(c);player.mtx=player.mty=null;return;}}
     player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;
   }
@@ -1381,6 +1464,8 @@ $('euExploreBtn').addEventListener('click',()=>{$('europeWin').hidden=true;st.ru
 $('insideExit').addEventListener('click',()=>{$('inside').hidden=true;player.mtx=player.mty=null;st.running=true;});
 $('launchBtn').addEventListener('click',()=>{$('rocket').hidden=true;startSpace();});
 $('spaceRebirthBtn').addEventListener('click',()=>{$('spaceWin').hidden=true;startGame();});
+$('listBtn').addEventListener('click',openChecklist);
+$('checklistClose').addEventListener('click',()=>{$('checklist').hidden=true;st.running=true;});
 
 // ---------- loop ----------
 genWorld();player.x=spawn.x;player.y=spawn.y;focus.x=spawn.x;focus.y=spawn.y;
