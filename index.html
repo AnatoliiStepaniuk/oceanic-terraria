@@ -217,6 +217,26 @@
   </div>
 </div>
 
+<div id="rocket" class="overlay" hidden>
+  <div class="panel" style="text-align:center">
+    <div class="eyebrow">Японія 🍣 · суші-магазин</div>
+    <div style="font-size:56px;line-height:1.3">🚀</div>
+    <h2>Ракета готова!</h2>
+    <p style="margin:0 auto 18px;max-width:44ch">Ти зібрав усі деталі 🔩⛽⚙️🔺 і купив суші на дорогу. Час летіти в космос!</p>
+    <div class="row" style="justify-content:center"><button class="btn" id="launchBtn">🚀 Запустити ракету!</button></div>
+  </div>
+</div>
+
+<div id="spaceWin" class="overlay" hidden>
+  <div class="panel" style="text-align:center">
+    <div class="eyebrow">Космос пройдено 🎉🚀</div>
+    <h2>Ти облетів усі планети!</h2>
+    <p>Час: <b id="spaceTime">0:00</b>. Ти побував на всіх планетах Сонячної системи і повернувся додому 🌍. Космонавт Костя! 🏆</p>
+    <div class="letter"><p><b>Костя,</b> ти пройшов усю гру — острів, море, Європа, Азія і космос! Неймовірно. 🌟 Хочеш ще щось — розкажи голосом.</p></div>
+    <div class="row" style="justify-content:center"><button class="btn" id="spaceRebirthBtn">Переродження 🔄 (спочатку)</button></div>
+  </div>
+</div>
+
 <script>
 (() => {
 'use strict';
@@ -308,13 +328,15 @@ const player={x:0,y:0,dir:'down',moving:false,anim:0,hunger:100,thirst:100,hurt:
 const marker={x:0,y:0,t:9,kind:'go'};
 const inv={wood:0,fiber:0,axe:0};
 const invested={wood:0,fiber:0};
-const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false,coco:0,euVisited:0,euWon:false,euSeen:{}};
+const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false,coco:0,euVisited:0,euWon:false,euSeen:{},parts:0,planets:0,planetsSeen:{},spaceWon:false};
 const keys={};
 const SEA={w:1600,startX:800,startY:3500,shoreY:320};
 const sharks=[],seaFish=[],wakes=[],seaCoco=[];
 // ---- Європа (частина 3) ----
-const EUR={w:2800,h:2200,startX:920,startY:1090,ship:{x:710,y:1075}};
-const COUNTRIES=[
+const EUROPE_CFG={w:2800,h:2200,startX:920,startY:1090,ship:{x:710,y:1075},portal:{x:2560,y:650},id:'europe'};
+const ASIA_CFG={w:2600,h:1600,startX:320,startY:760,ship:{x:150,y:760},id:'asia'};
+let EUR=EUROPE_CFG;   // активний регіон (функції читають EUR.*, COUNTRIES, BRIDGES)
+const EUROPE_COUNTRIES=[
   {id:'uk',name:'Британія',   cx:640, cy:520, rx:180,ry:240,tint:'#6fae5a',fact:'Британія — Біг-Бен 🕰️ і червоний автобус 🚌'},
   {id:'nl',name:'Нідерланди', cx:1050,cy:560, rx:135,ry:150,tint:'#7ab85f',fact:'Нідерланди — вітряк і тюльпани 🌷'},
   {id:'de',name:'Німеччина',  cx:1270,cy:780, rx:230,ry:230,tint:'#74b35a',fact:'Німеччина — Бранденбурзькі ворота і крендель 🥨'},
@@ -341,9 +363,28 @@ const COUNTRIES=[
   {id:'be',name:'Бельгія',    cx:985, cy:705, rx:78, ry:78, tint:'#7ab85f',fact:'Бельгія — вафлі 🧇, шоколад і Атоміум'},
   {id:'lu',name:'Люксембург', cx:1085,cy:775, rx:48, ry:48, tint:'#8cbf5e',fact:'Люксембург — маленька країна з великою фортецею 🏰'},
 ];
-const BRIDGES=[{cx:895,cy:560,rx:140,ry:48},{cx:1372,cy:1345,rx:82,ry:62}]; // Ла-Манш (Британія) + перешийок Італія↔Греція
+const EUROPE_BRIDGES=[{cx:895,cy:560,rx:140,ry:48},{cx:1372,cy:1345,rx:82,ry:62}]; // Ла-Манш (Британія) + перешийок Італія↔Греція
+// ---- Азія (частина 4) ----
+const ASIA_COUNTRIES=[
+  {id:'ru',name:'Сибір',      cx:380, cy:700, rx:300,ry:320,tint:'#6fae5a',fact:'Сибір — холодний ліс 🌲. Звідси йдемо в Азію!'},
+  {id:'kz',name:'Казахстан',  cx:870, cy:820, rx:240,ry:230,tint:'#8cbf5e',fact:'Казахстан — широкі степи і юрти ⛺'},
+  {id:'mn',name:'Монголія',   cx:1240,cy:620, rx:220,ry:190,tint:'#7cbb60',fact:'Монголія — юрти і швидкі коні 🐎'},
+  {id:'cn',name:'Китай',      cx:1520,cy:1000,rx:300,ry:270,tint:'#7ab85f',fact:'Китай — Велика стіна, панда 🐼 і пагоди'},
+  {id:'in',name:'Індія',      cx:1230,cy:1360,rx:240,ry:200,tint:'#8cbf5e',fact:'Індія — Тадж-Махал 🕌 і слони 🐘'},
+  {id:'kr',name:'Корея',      cx:2010,cy:1060,rx:135,ry:135,tint:'#7cbb60',fact:'Корея — пагоди і смачна локшина 🍜'},
+  {id:'jp',name:'Японія',     cx:2300,cy:880, rx:165,ry:230,tint:'#7ab85f',fact:'🍣 Японія — гора Фудзі 🗻 і суші. Тут будуємо ракету!'},
+];
+const ASIA_BRIDGES=[{cx:1860,cy:1030,rx:95,ry:75},{cx:2150,cy:970,rx:95,ry:75}]; // Китай↔Корея, Корея↔Японія
+ASIA_CFG.parts=[
+  {x:870, y:820, kind:'metal', emoji:'🔩', got:false},
+  {x:1240,y:620, kind:'fuel',  emoji:'⛽', got:false},
+  {x:1520,y:1000,kind:'engine',emoji:'⚙️', got:false},
+  {x:1230,y:1360,kind:'nose',  emoji:'🔺', got:false},
+];
+let COUNTRIES=EUROPE_COUNTRIES;   // активний список країн
+let BRIDGES=EUROPE_BRIDGES;       // активні містки
 let freeCam=false;const focus={x:0,y:0};
-function clampFocus(){if(st.scene==='sea'){focus.x=clamp(focus.x,-120,SEA.w+120);focus.y=clamp(focus.y,SEA.shoreY-200,SEA.startY+200);return;}if(st.scene==='europe'){focus.x=clamp(focus.x,-120,EUR.w+120);focus.y=clamp(focus.y,-120,EUR.h+120);return;}if(st.scene==='inside'){focus.x=clamp(focus.x,-80,IN.w+80);focus.y=clamp(focus.y,-80,IN.h+80);return;}const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
+function clampFocus(){if(st.scene==='sea'){focus.x=clamp(focus.x,-120,SEA.w+120);focus.y=clamp(focus.y,SEA.shoreY-200,SEA.startY+200);return;}if(st.scene==='europe'){focus.x=clamp(focus.x,-120,EUR.w+120);focus.y=clamp(focus.y,-120,EUR.h+120);return;}if(st.scene==='inside'){focus.x=clamp(focus.x,-80,IN.w+80);focus.y=clamp(focus.y,-80,IN.h+80);return;}if(st.scene==='space'){focus.x=clamp(focus.x,-80,SPACE.w+80);focus.y=clamp(focus.y,-80,SPACE.h+80);return;}const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
 const dressed=()=>st.cloth>=NEED_CLOTH;
 
 const QUESTS=[
@@ -390,11 +431,12 @@ function updateUI(){
   }
   if(st.scene==='europe'){
     const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
-    const qk='eu'+st.euVisited;
+    const asia=EUR.id==='asia';
+    const qk=asia?('as'+st.parts):('eu'+st.euVisited);
     if(ui.quest!==qk){ui.quest=qk;
-      stepsEl.innerHTML='<div class="step cur"><span class="k">🗺️</span><span>Обійди всю Європу</span></div>';
-      questHint.innerHTML=`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
-    let h=st.toastT>0?st.toastMsg:'Гуляй Європою! Тапни країну — дізнаєшся про неї';
+      stepsEl.innerHTML='<div class="step cur"><span class="k">'+(asia?'🚀':'🗺️')+'</span><span>'+(asia?'Збери ракету, лети в Японію':'Обійди всю Європу')+'</span></div>';
+      questHint.innerHTML=asia?`Деталі ракети: <b>${st.parts}/${EUR.parts.length}</b> 🔧 · тоді в Японію 🍣`:`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
+    let h=st.toastT>0?st.toastMsg:(asia?'Збери деталі 🔩⛽⚙️🔺 і дійди до Японії 🍣':'Гуляй Європою! Тапни країну — дізнаєшся про неї');
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -403,6 +445,14 @@ function updateUI(){
     const c=st.insideCountry||{name:''};const qk='in'+c.name;
     if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">🚪</span><span>Усередині: '+c.name+'</span></div>';questHint.innerHTML='Роздивись кімнату. Щоб вийти — іди до дверей ▼ знизу.';}
     let h=st.toastT>0?st.toastMsg:'Іди до дверей ▼ знизу, щоб вийти';
+    if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
+    return;
+  }
+  if(st.scene==='space'){
+    const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
+    const qk='sp'+st.planets+(st.spaceHome?'h':'');
+    if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">🚀</span><span>'+(st.spaceHome?'Лети додому 🌍':'Облети всі планети')+'</span></div>';questHint.innerHTML=`Планети: <b>${st.planets}/${PLANET_TARGET}</b> 🪐`;}
+    let h=st.toastT>0?st.toastMsg:(st.spaceHome?'Лети вниз до 🏠 старту':'Лети до планет 🪐 (обминай Сонце ☀️)');
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -494,6 +544,7 @@ function update(dt){
   if(st.scene==='sea'){updateSea(dt);return;}
   if(st.scene==='europe'){updateEurope(dt);return;}
   if(st.scene==='inside'){updateInside(dt);return;}
+  if(st.scene==='space'){updateSpace(dt);return;}
   // movement
   let dx=0,dy=0;
   const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
@@ -551,6 +602,7 @@ function drawWorld(now){
   if(st.scene==='sea'){drawSea(now);return;}
   if(st.scene==='europe'){drawEurope(now);return;}
   if(st.scene==='inside'){drawInside(now);return;}
+  if(st.scene==='space'){drawSpace(now);return;}
   const vwz=vw/zoom,vhz=vh/zoom;
   if(!freeCam){focus.x=player.x;focus.y=player.y;}
   cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
@@ -625,6 +677,7 @@ function drawMinimap(){
   if(st.scene==='sea'){drawSeaMini();return;}
   if(st.scene==='europe'){drawEuropeMini();return;}
   if(st.scene==='inside'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#17283a';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#f5ecd6';mm.font='700 12px Rubik, sans-serif';mm.textAlign='center';mm.fillText('🚪 Усередині',mmC.width/2,mmC.height/2+4);return;}
+  if(st.scene==='space'){drawSpaceMini();return;}
   const img=mmo.createImageData(W,H),d=img.data;
   for(let i=0;i<W*H;i++){let c;if(!seen[i])c=[15,28,42];else{const t=tiles[i];c=t===DEEP?[27,111,168]:t===SHALLOW?[58,166,216]:t===SAND?[232,213,154]:[111,191,74];}d[i*4]=c[0];d[i*4+1]=c[1];d[i*4+2]=c[2];d[i*4+3]=255;}
   mmo.putImageData(img,0,0);mm.imageSmoothingEnabled=false;mm.clearRect(0,0,mmC.width,mmC.height);mm.drawImage(mmOff,0,0,mmC.width,mmC.height);
@@ -639,7 +692,7 @@ function drawMinimap(){
 // ================= ЧАСТИНА 2: МОРЕ → ФРАНЦІЯ (за ідеєю Кості) =================
 function layoutHud(){const isl=st.scene==='island';
   $('food').hidden=!isl;$('thirst').hidden=!isl;$('inv').hidden=!isl;
-  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?'Європа 🗺️':st.scene==='inside'?'Усередині 🚪':'Мапа острова';}
+  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?(EUR.id==='asia'?'Азія 🌏':'Європа 🗺️'):st.scene==='inside'?'Усередині 🚪':st.scene==='space'?'Космос 🚀':'Мапа острова';}
 function startSea(){
   st.scene='sea';st.running=true;st.over=false;st.won=true;st.seaWon=false;st.seaProg=0;st.seaInv=1.2;st.time=0;st.toastT=0;
   player.x=SEA.startX;player.y=SEA.startY;player.dir='up';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
@@ -827,7 +880,7 @@ function inEll(x,y,c){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry;return dx*dx+dy*dy
 function europeLand(x,y){for(const c of COUNTRIES)if(inEll(x,y,c))return true;for(const b of BRIDGES)if(inEll(x,y,b))return true;return false;}
 function canStandEU(x,y){return europeLand(x-7,y+4)&&europeLand(x+7,y+4)&&europeLand(x,y-2);}
 function countryAt(x,y){let best=null,bd=Infinity;for(const c of COUNTRIES){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry,d=dx*dx+dy*dy;if(d<=1&&d<bd){bd=d;best=c;}}return best;}
-const EMOJI={fr:'🗼',it:'🍕',es:'🐂',de:'🥨',uk:'🕰️',nl:'🌷',gr:'🏛️',ua:'🌻',pl:'🏰',dk:'🧱',no:'⛵',se:'🐴',fi:'❄️',ee:'🏰',lv:'🌲',lt:'🏯',by:'🕊️',ro:'🦇',md:'🍇',bg:'🌹',tr:'🕌',pt:'🐓',lo:'🐻',be:'🧇',lu:'🏰'};
+const EMOJI={fr:'🗼',it:'🍕',es:'🐂',de:'🥨',uk:'🕰️',nl:'🌷',gr:'🏛️',ua:'🌻',pl:'🏰',dk:'🧱',no:'⛵',se:'🐴',fi:'❄️',ee:'🏰',lv:'🌲',lt:'🏯',by:'🕊️',ro:'🦇',md:'🍇',bg:'🌹',tr:'🕌',pt:'🐓',lo:'🐻',be:'🧇',lu:'🏰',ru:'🌲',kz:'⛺',mn:'🐎',cn:'🐼',in:'🐘',kr:'🍜',jp:'🍣'};
 const IN={w:760,h:560,wall:26,doorW:100};
 function openInside(c){st.insideCountry=c;st.euReturn={x:player.x,y:player.y};st.scene='inside';
   player.x=IN.w/2;player.y=IN.h-IN.wall-28;player.dir='up';player.moving=false;player.mtx=player.mty=null;
@@ -896,13 +949,24 @@ function drawInside(now){
   ctx.globalAlpha=1;}
 function goToStart(){st.running=false;st.over=false;st.scene='island';const ins=$('inside');if(ins)ins.hidden=true;layoutHud();$('start').hidden=false;sfx('craft');}
 function startEurope(){
+  EUR=EUROPE_CFG;COUNTRIES=EUROPE_COUNTRIES;BRIDGES=EUROPE_BRIDGES;
   st.scene='europe';st.running=true;st.over=false;st.won=true;st.cloth=NEED_CLOTH;st.time=0;st.toastT=0;st.euWon=false;st.euSeen={};
   player.x=EUR.startX;player.y=EUR.startY;player.dir='down';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
   freeCam=false;focus.x=player.x;focus.y=player.y;floats.length=0;
   st.euSeen['fr']=true;st.euVisited=1; // ти приплив у Францію
   ui.quest='';ui.hint='';ui.time=-1;layoutHud();
-  $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('menu').hidden=true;
-  toast('Ти у Європі, у Франції! 🇫🇷 Гуляй і відвідай усі країни',3.6);
+  $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('menu').hidden=true;const rk=$('rocket');if(rk)rk.hidden=true;
+  toast('Ти у Європі, у Франції! 🇫🇷 На сході, за Росією, портал у Азію 🌏',4);
+}
+function startAsia(){
+  EUR=ASIA_CFG;COUNTRIES=ASIA_COUNTRIES;BRIDGES=ASIA_BRIDGES;
+  st.scene='europe';st.running=true;st.over=false;st.won=true;st.cloth=NEED_CLOTH;st.time=0;st.toastT=0;st.euWon=false;st.euSeen={};st.parts=0;
+  for(const p of ASIA_CFG.parts)p.got=false;
+  player.x=EUR.startX;player.y=EUR.startY;player.dir='right';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
+  freeCam=false;focus.x=player.x;focus.y=player.y;floats.length=0;
+  ui.quest='';ui.hint='';ui.time=-1;layoutHud();
+  $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('menu').hidden=true;const rk=$('rocket');if(rk)rk.hidden=true;
+  toast('Ти в Азії! 🌏 Збери 4 деталі ракети і дійди до Японії 🍣',4);
 }
 function europeWin(){if(st.euWon)return;st.euWon=true;sfx('win');$('euTime').textContent=fmtTime(st.time);setTimeout(()=>{if(st.scene==='europe'&&st.euWon){st.running=false;$('europeWin').hidden=false;}},1300);}
 function updateEurope(dt){
@@ -920,8 +984,10 @@ function updateEurope(dt){
     if(bx&&by)player.mtx=player.mty=null;
     player.anim+=dt*9;}
   const c=countryAt(player.x,player.y);
-  if(c&&!st.euSeen[c.id]){st.euSeen[c.id]=true;st.euVisited++;sfx('craft');toast('Нова країна: '+c.name+'! 🏳️',2.6);floats.push({x:player.x,y:player.y-46,s:'✓ '+c.name,t:0});
-    if(st.euVisited>=COUNTRIES.length)europeWin();}
+  if(c&&!st.euSeen[c.id]){st.euSeen[c.id]=true;st.euVisited++;sfx('craft');toast('Нова країна: '+c.name+'! 🏳️',2.4);floats.push({x:player.x,y:player.y-46,s:'✓ '+c.name,t:0});
+    if(EUR.id==='europe'&&st.euVisited>=COUNTRIES.length)europeWin();}
+  if(EUR.parts)for(const p of EUR.parts){if(!p.got&&Math.hypot(player.x-p.x,player.y-p.y)<36){p.got=true;st.parts++;sfx('eat');floats.push({x:p.x,y:p.y-28,s:'+'+p.emoji+' деталь',t:0});
+    if(st.parts>=EUR.parts.length)toast('Усі деталі є! 🚀 Іди в Японію 🍣 і збудуй ракету',3.4);}}
   for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.4)floats.splice(i,1);}
 }
 function drawEurope(now){
@@ -941,6 +1007,8 @@ function drawEurope(now){
   if(marker.t<0.6){const a=1-marker.t/0.6,rr=8+marker.t*30;ctx.strokeStyle=`rgba(245,236,214,${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,rr,0,Math.PI*2);ctx.stroke();}
   const ents=[],iv=(x,y)=>x>cam.x-140&&x<cam.x+vwz+140&&y>cam.y-170&&y<cam.y+vhz+140;
   for(const c of COUNTRIES)if(iv(c.cx,c.cy))ents.push({y:c.cy,f:()=>drawLandmark(c,tsec)});
+  if(EUR.parts)for(const p of EUR.parts)if(!p.got&&iv(p.x,p.y))ents.push({y:p.y,f:()=>drawPart(p,tsec)});
+  if(EUR.portal&&iv(EUR.portal.x,EUR.portal.y))ents.push({y:EUR.portal.y,f:()=>drawPortal(tsec)});
   if(iv(EUR.ship.x,EUR.ship.y))ents.push({y:EUR.ship.y,f:()=>drawShipEU()});
   ents.push({y:player.y,f:()=>drawPlayer(tsec)});
   ents.sort((a,b)=>a.y-b.y);for(const e of ents)e.f();
@@ -980,6 +1048,13 @@ function drawFlag(x,y,id){const w=30,h=20,lx=x-w/2;
     case 'lo':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#4aa3e0';ctx.fillRect(lx,y+h*0.36,w,h*0.28);break;
     case 'be':Vb('#111111','#FDDA24','#EF3340');break;
     case 'lu':Hb('#ED2939','#fff','#00A1DE');break;
+    case 'ru':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#4aa3e0';ctx.fillRect(lx,y+h*0.36,w,h*0.28);break;
+    case 'kz':ctx.fillStyle='#00AFCA';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#FEC50C';ctx.beginPath();ctx.arc(lx+w/2,y+h*0.42,4,0,Math.PI*2);ctx.fill();break;
+    case 'mn':Vb('#C4272E','#015197','#C4272E');break;
+    case 'cn':ctx.fillStyle='#DE2910';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#FFDE00';ctx.font='700 10px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+7,y+9);ctx.font='700 5px Rubik';ctx.fillText('★',lx+13,y+4);ctx.fillText('★',lx+15,y+8);ctx.fillText('★',lx+15,y+13);ctx.fillText('★',lx+13,y+16);break;
+    case 'in':Hb('#FF9933','#fff','#138808');ctx.strokeStyle='#000080';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(lx+w/2,y+h/2,3,0,Math.PI*2);ctx.stroke();break;
+    case 'kr':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#CD2E3A';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,5,Math.PI,0);ctx.fill();ctx.fillStyle='#0047A0';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,5,0,Math.PI);ctx.fill();break;
+    case 'jp':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#BC002D';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,6,0,Math.PI*2);ctx.fill();break;
     default:ctx.fillStyle='#ccc';ctx.fillRect(lx,y,w,h);
   }
   ctx.strokeStyle='#0f1c2a';ctx.lineWidth=1;ctx.strokeRect(lx,y,w,h);
@@ -1011,6 +1086,13 @@ function drawLandmark(c,tsec){const x=c.cx,y=c.cy;
     case 'lo':euChurch(x,y,'#c0392b');break;
     case 'be':euAtomium(x,y);break;
     case 'lu':euCastle(x,y);break;
+    case 'ru':euChurch(x,y,'#c0392b');break;
+    case 'kz':euYurt(x,y);break;
+    case 'mn':euYurt(x,y);break;
+    case 'cn':euPagoda(x,y,'#c0392b');break;
+    case 'in':euMosque(x,y);break;
+    case 'kr':euPagoda(x,y,'#2e7d8c');break;
+    case 'jp':euFuji(x,y);break;
   }
 }
 function shadow(x,y,r){ctx.fillStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.ellipse(x,y+4,r,r*0.24,0,0,Math.PI*2);ctx.fill();}
@@ -1106,6 +1188,15 @@ function euAtomium(x,y){shadow(x,y,26);const r=8,pts=[[0,0],[-22,-22],[22,-22],[
   ctx.strokeStyle='#9aa7b0';ctx.lineWidth=3;
   for(const[a,b]of [[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],[1,5],[2,5],[3,6],[4,6],[1,7],[3,7],[2,8],[4,8]]){ctx.beginPath();ctx.moveTo(cx+pts[a][0],cy+pts[a][1]);ctx.lineTo(cx+pts[b][0],cy+pts[b][1]);ctx.stroke();}
   for(const[px,py]of pts){ctx.fillStyle='#c0c8ce';ctx.beginPath();ctx.arc(cx+px,cy+py,r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#eef2f5';ctx.beginPath();ctx.arc(cx+px-2,cy+py-2,3,0,Math.PI*2);ctx.fill();}}
+function euPagoda(x,y,col){shadow(x,y,22);ctx.fillStyle='#b06a3a';ctx.fillRect(x-10,y-46,20,48);
+  for(let i=0;i<3;i++){const ty=y-16-i*16,w=28-i*6;ctx.fillStyle=col||'#c0392b';ctx.beginPath();ctx.moveTo(x-w,ty);ctx.lineTo(x-w+8,ty-10);ctx.lineTo(x+w-8,ty-10);ctx.lineTo(x+w,ty);ctx.closePath();ctx.fill();ctx.fillStyle='#8a2b2b';ctx.fillRect(x-w,ty,2*w,3);}
+  ctx.fillStyle='#f5b301';ctx.fillRect(x-1,y-62,2,8);ctx.fillStyle='#5b3a1e';ctx.fillRect(x-5,y-14,10,16);}
+function euFuji(x,y){shadow(x,y,44);ctx.fillStyle='#6b7a9a';ctx.beginPath();ctx.moveTo(x-44,y+2);ctx.lineTo(x,y-56);ctx.lineTo(x+44,y+2);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(x-16,y-30);ctx.lineTo(x,y-56);ctx.lineTo(x+16,y-30);ctx.quadraticCurveTo(x+6,y-24,x,y-28);ctx.quadraticCurveTo(x-6,y-24,x-16,y-30);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#d42b2b';ctx.fillRect(x-20,y-8,4,12);ctx.fillRect(x+16,y-8,4,12);ctx.fillRect(x-24,y-12,48,4);ctx.fillRect(x-22,y-5,44,3);}
+function euYurt(x,y){shadow(x,y,24);ctx.fillStyle='#e7e0d0';ctx.beginPath();ctx.moveTo(x-24,y+2);ctx.lineTo(x-20,y-18);ctx.quadraticCurveTo(x,y-34,x+20,y-18);ctx.lineTo(x+24,y+2);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#c9bfa6';ctx.beginPath();ctx.moveTo(x-20,y-18);ctx.quadraticCurveTo(x,y-34,x+20,y-18);ctx.lineTo(x,y-25);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#8a5a2b';ctx.fillRect(x-6,y-10,12,12);ctx.strokeStyle='#b3a184';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-22,y-8);ctx.lineTo(x+22,y-8);ctx.stroke();}
 function drawShipEU(){const s=EUR.ship,x=s.x,y=s.y,bob=Math.sin(performance.now()/500)*2;
   ctx.fillStyle='rgba(0,0,0,.16)';ctx.beginPath();ctx.ellipse(x,y+12,26,7,0,0,Math.PI*2);ctx.fill();
   ctx.save();ctx.translate(x,y+bob);
@@ -1115,6 +1206,15 @@ function drawShipEU(){const s=EUR.ship,x=s.x,y=s.y,bob=Math.sin(performance.now(
   ctx.fillStyle='#3a5f9e';ctx.beginPath();ctx.moveTo(-2,-40);ctx.lineTo(-2,-16);ctx.lineTo(-22,-28);ctx.closePath();ctx.fill();
   ctx.restore();
   ctx.font='700 12px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#0f1c2a';ctx.fillText('🚢 Назад',x+1,y-52+1);ctx.fillStyle='#fff';ctx.fillText('🚢 Назад',x,y-52);}
+function drawPart(p,tsec){const bob=Math.sin(tsec*3+p.x)*2,x=p.x,y=p.y+bob;
+  ctx.fillStyle='rgba(0,0,0,.16)';ctx.beginPath();ctx.ellipse(x,p.y+8,10,3,0,0,Math.PI*2);ctx.fill();
+  const g=(Math.sin(tsec*4+p.y)+1)/2;ctx.strokeStyle=`rgba(255,240,150,${.3+g*.4})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,15,0,Math.PI*2);ctx.stroke();
+  ctx.font='22px serif';ctx.textAlign='center';ctx.fillText(p.emoji,x,y+8);}
+function drawPortal(tsec){const x=EUR.portal.x,y=EUR.portal.y;
+  ctx.fillStyle='rgba(0,0,0,.16)';ctx.beginPath();ctx.ellipse(x,y+8,24,8,0,0,Math.PI*2);ctx.fill();
+  for(let i=3;i>=0;i--){const r=10+i*7,hue=(tsec*60+i*40)%360;ctx.fillStyle=`hsl(${hue},70%,55%)`;ctx.beginPath();ctx.ellipse(x,y-14,r*0.8,r,0,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='#0a0a1a';ctx.beginPath();ctx.ellipse(x,y-14,6,9,0,0,Math.PI*2);ctx.fill();
+  ctx.font='700 13px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#0f1c2a';ctx.fillText('→ АЗІЯ 🌏',x+1,y-39);ctx.fillStyle='#fff';ctx.fillText('→ АЗІЯ 🌏',x,y-40);}
 function drawEuropeMini(){
   mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#1b6fa8';mm.fillRect(0,0,mmC.width,mmC.height);
   const kx=mmC.width/EUR.w,ky=mmC.height/EUR.h;
@@ -1122,6 +1222,84 @@ function drawEuropeMini(){
   for(const c of COUNTRIES){mm.fillStyle=st.euSeen[c.id]?'#9be070':'#5f8f4a';mm.beginPath();mm.ellipse(c.cx*kx,c.cy*ky,c.rx*kx,c.ry*ky,0,0,Math.PI*2);mm.fill();}
   mm.fillStyle='#e5443b';mm.fillRect(player.x*kx-2,player.y*ky-2,4,4);
 }
+// =============================================================================
+
+// ================= ЧАСТИНА 5: КОСМОС (за ідеєю Кості) =================
+const SPACE={w:2600,h:2100,startX:1300,startY:1900};
+const PLANETS=[
+  {id:'sun',name:'Сонце',   cx:1300,cy:230, r:92,col:'#ffcc33',sun:true,fact:'Сонце — величезна зірка ☀️ Не підлітай близько!'},
+  {id:'me', name:'Меркурій',cx:780, cy:520, r:26,col:'#9a8a7a',fact:'Меркурій — найближчий до Сонця'},
+  {id:'ve', name:'Венера',  cx:1800,cy:500, r:40,col:'#d9a066',fact:'Венера — найгарячіша планета 🔥'},
+  {id:'ea', name:'Земля',   cx:560, cy:980, r:46,col:'#3a86c8',fact:'Земля — наш дім 🌍'},
+  {id:'ma', name:'Марс',    cx:2020,cy:980, r:34,col:'#c1440e',fact:'Марс — червона планета 🔴'},
+  {id:'ju', name:'Юпітер',  cx:820, cy:1400,r:72,col:'#c9a06a',fact:'Юпітер — найбільша планета'},
+  {id:'sa', name:'Сатурн',  cx:1820,cy:1380,r:56,col:'#e0c56a',ring:true,fact:'Сатурн — з красивими кільцями 💍'},
+  {id:'ur', name:'Уран',    cx:560, cy:1650,r:40,col:'#8ad0d8',fact:'Уран — крижаний блакитний'},
+  {id:'ne', name:'Нептун',  cx:2060,cy:1620,r:40,col:'#3a5fd0',fact:'Нептун — найдальший, синій'},
+];
+const PLANET_TARGET=PLANETS.filter(p=>!p.sun).length; // 8
+let stars=null;
+function openRocket(){st.running=false;const rk=$('rocket');if(rk)rk.hidden=false;sfx('craft');}
+function startSpace(){
+  st.scene='space';st.running=true;st.over=false;st.time=0;st.toastT=0;st.planets=0;st.planetsSeen={};st.spaceWon=false;st.spaceHome=false;
+  player.x=SPACE.startX;player.y=SPACE.startY;player.mtx=player.mty=null;player.moving=false;
+  freeCam=false;focus.x=player.x;focus.y=player.y;floats.length=0;
+  if(!stars){stars=[];for(let i=0;i<220;i++)stars.push({x:rand(0,SPACE.w),y:rand(0,SPACE.h),r:rand(.5,1.8),p:rand(0,6.28)});}
+  ui.quest='';ui.hint='';ui.time=-1;layoutHud();
+  $('start').hidden=true;const rk=$('rocket');if(rk)rk.hidden=true;$('spaceWin').hidden=true;$('menu').hidden=true;
+  toast('🚀 Ти в космосі! Облети всі планети, тоді вертайся додому 🌍',4);
+}
+function spaceWin(){if(st.spaceWon)return;st.spaceWon=true;st.running=false;sfx('win');$('spaceTime').textContent=fmtTime(st.time);setTimeout(()=>{if(st.scene==='space')$('spaceWin').hidden=false;},900);}
+function updateSpace(dt){
+  let dx=0,dy=0;
+  const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
+  const ky=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0);
+  if(kx||ky){player.mtx=player.mty=null;dx=kx;dy=ky;}
+  else if(player.mtx!=null){const gx=player.mtx-player.x,gy=player.mty-player.y,gl=Math.hypot(gx,gy);if(gl>4){dx=gx/gl;dy=gy/gl;}else player.mtx=player.mty=null;}
+  const len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}
+  player.moving=len>0.1;
+  const sp=185*dt;player.x=clamp(player.x+dx*sp,20,SPACE.w-20);player.y=clamp(player.y+dy*sp,20,SPACE.h-20);
+  for(const p of PLANETS){const d=Math.hypot(player.x-p.cx,player.y-p.cy);
+    if(p.sun){if(d<p.r+16){const a=Math.atan2(player.y-p.cy,player.x-p.cx);player.x=p.cx+Math.cos(a)*(p.r+18);player.y=p.cy+Math.sin(a)*(p.r+18);player.mtx=player.mty=null;toast('Гаряче! 🔥 Тікай від Сонця!',1.6);}continue;}
+    if(d<p.r+22&&!st.planetsSeen[p.id]){st.planetsSeen[p.id]=true;st.planets++;sfx('craft');toast(p.fact,2.8);floats.push({x:p.cx,y:p.cy-p.r-10,s:'✓ '+p.name,t:0});
+      if(st.planets>=PLANET_TARGET&&!st.spaceHome){st.spaceHome=true;toast('Усі планети! 🎉 Лети додому 🌍 (вниз, де старт)',4);}}}
+  if(st.spaceHome&&Math.hypot(player.x-SPACE.startX,player.y-SPACE.startY)<52)spaceWin();
+  for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.6)floats.splice(i,1);}
+}
+function drawSpace(now){
+  const vwz=vw/zoom,vhz=vh/zoom,tsec=now/1000;
+  if(!freeCam){focus.x=player.x;focus.y=player.y;}
+  focus.x=clamp(focus.x,-80,SPACE.w+80);focus.y=clamp(focus.y,-80,SPACE.h+80);
+  cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
+  ctx.setTransform(dpr*zoom,0,0,dpr*zoom,-cam.x*dpr*zoom,-cam.y*dpr*zoom);
+  ctx.fillStyle='#070a18';ctx.fillRect(cam.x-40,cam.y-40,vwz+80,vhz+80);
+  if(stars)for(const s of stars){if(s.x<cam.x-10||s.x>cam.x+vwz+10||s.y<cam.y-10||s.y>cam.y+vhz+10)continue;const tw=.5+.5*Math.sin(tsec*3+s.p);ctx.fillStyle=`rgba(255,255,255,${.3+tw*.6})`;ctx.fillRect(s.x,s.y,s.r,s.r);}
+  // home marker
+  if(st.spaceHome){const hx=SPACE.startX,hy=SPACE.startY,g=(Math.sin(tsec*4)+1)/2;ctx.strokeStyle=`rgba(120,220,120,${.5+g*.4})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(hx,hy,40,0,Math.PI*2);ctx.stroke();ctx.font='700 14px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#bff0a8';ctx.fillText('🏠 ДОДОМУ',hx,hy-46);}
+  for(const p of PLANETS){if(p.cx<cam.x-p.r-140||p.cx>cam.x+vwz+p.r+140||p.cy<cam.y-p.r-140||p.cy>cam.y+vhz+p.r+140)continue;
+    if(p.sun){const gr=ctx.createRadialGradient(p.cx,p.cy,10,p.cx,p.cy,p.r+30);gr.addColorStop(0,'#fff2a8');gr.addColorStop(.5,p.col);gr.addColorStop(1,'rgba(255,170,40,0)');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(p.cx,p.cy,p.r+30,0,Math.PI*2);ctx.fill();}
+    if(p.ring){ctx.strokeStyle='#cbb26a';ctx.lineWidth=5;ctx.save();ctx.translate(p.cx,p.cy);ctx.scale(1,.4);ctx.beginPath();ctx.arc(0,0,p.r+16,0,Math.PI*2);ctx.stroke();ctx.restore();}
+    ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.cx,p.cy,p.r,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.arc(p.cx-p.r*.3,p.cy-p.r*.3,p.r*.5,0,Math.PI*2);ctx.fill();
+    if(st.planetsSeen[p.id]){ctx.fillStyle='#7ed957';ctx.font='700 14px Rubik, sans-serif';ctx.textAlign='center';ctx.fillText('✓',p.cx,p.cy-p.r-14);}
+    ctx.font='700 14px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#0a1020';ctx.fillText(p.name,p.cx+1,p.cy+p.r+19);ctx.fillStyle='#e8edf2';ctx.fillText(p.name,p.cx,p.cy+p.r+18);}
+  if(marker.t<0.6){const a=1-marker.t/0.6,rr=8+marker.t*30;ctx.strokeStyle=`rgba(180,220,255,${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,rr,0,Math.PI*2);ctx.stroke();}
+  drawRocket(tsec);
+  ctx.font='700 12px Rubik, sans-serif';ctx.textAlign='center';
+  for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-1)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0a1020';ctx.fillText(f.s,f.x+1,f.y-f.t*24+1);ctx.fillStyle='#e8edf2';ctx.fillText(f.s,f.x,f.y-f.t*24);}
+  ctx.globalAlpha=1;
+}
+function drawRocket(tsec){const x=player.x,y=player.y,fl=6+Math.sin(tsec*30)*3;
+  ctx.fillStyle='#ffb03a';ctx.beginPath();ctx.moveTo(x-5,y+12);ctx.lineTo(x,y+12+fl);ctx.lineTo(x+5,y+12);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#ff5a2a';ctx.beginPath();ctx.moveTo(x-3,y+12);ctx.lineTo(x,y+12+fl*.6);ctx.lineTo(x+3,y+12);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#e8edf2';ctx.beginPath();ctx.moveTo(x,y-20);ctx.quadraticCurveTo(x-8,y-6,x-8,y+6);ctx.lineTo(x-8,y+12);ctx.lineTo(x+8,y+12);ctx.lineTo(x+8,y+6);ctx.quadraticCurveTo(x+8,y-6,x,y-20);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#d42b2b';ctx.beginPath();ctx.moveTo(x,y-20);ctx.lineTo(x-4,y-12);ctx.lineTo(x+4,y-12);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#3a86c8';ctx.beginPath();ctx.arc(x,y-4,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#bfe3f5';ctx.beginPath();ctx.arc(x-1,y-5,1.5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#d42b2b';ctx.beginPath();ctx.moveTo(x-8,y+4);ctx.lineTo(x-14,y+14);ctx.lineTo(x-8,y+12);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(x+8,y+4);ctx.lineTo(x+14,y+14);ctx.lineTo(x+8,y+12);ctx.closePath();ctx.fill();}
+function drawSpaceMini(){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#070a18';mm.fillRect(0,0,mmC.width,mmC.height);
+  const kx=mmC.width/SPACE.w,ky=mmC.height/SPACE.h;
+  for(const p of PLANETS){mm.fillStyle=p.sun?'#ffcc33':(st.planetsSeen[p.id]?'#9be070':p.col);mm.beginPath();mm.arc(p.cx*kx,p.cy*ky,Math.max(1.5,p.r*kx),0,Math.PI*2);mm.fill();}
+  mm.fillStyle='#fff';mm.fillRect(player.x*kx-2,player.y*ky-2,4,4);}
 // =============================================================================
 
 // ---------- input ----------
@@ -1153,11 +1331,15 @@ function tapWorld(clientX,clientY){
   const wx=cam.x+(clientX-rect.left)/zoom,wy=cam.y+(clientY-rect.top)/zoom;
   if(st.scene==='sea'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
   if(st.scene==='europe'){
-    if(Math.hypot(EUR.ship.x-wx,EUR.ship.y-wy)<48){goToStart();return;}
-    for(const c of COUNTRIES){if(Math.abs(wx-c.cx)<48&&wy<c.cy+24&&wy>c.cy-100){openInside(c);player.mtx=player.mty=null;return;}}
+    if(EUR.portal&&Math.hypot(EUR.portal.x-wx,EUR.portal.y-wy)<52){startAsia();return;}
+    if(Math.hypot(EUR.ship.x-wx,EUR.ship.y-wy)<50){if(EUR.id==='asia')startEurope();else goToStart();return;}
+    for(const c of COUNTRIES){if(Math.abs(wx-c.cx)<48&&wy<c.cy+24&&wy>c.cy-100){
+      if(EUR.id==='asia'&&c.id==='jp'&&st.parts>=(EUR.parts?EUR.parts.length:99)){openRocket();return;}
+      openInside(c);player.mtx=player.mty=null;return;}}
     player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;
   }
   if(st.scene==='inside'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
+  if(st.scene==='space'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
   // fallen items first — they sit near the palm base, so they take priority over the tree
   let dp=null,dd=32;for(const d of drops){const dist=Math.hypot(d.x-wx,d.y-wy);if(dist<dd){dd=dist;dp=d;}}
   if(dp){menuCtx={type:'drop',obj:dp};
@@ -1197,6 +1379,8 @@ $('toEuropeBtn').addEventListener('click',()=>{$('france').hidden=true;startEuro
 $('euRebirthBtn').addEventListener('click',()=>{$('europeWin').hidden=true;startGame();});
 $('euExploreBtn').addEventListener('click',()=>{$('europeWin').hidden=true;st.running=true;});
 $('insideExit').addEventListener('click',()=>{$('inside').hidden=true;player.mtx=player.mty=null;st.running=true;});
+$('launchBtn').addEventListener('click',()=>{$('rocket').hidden=true;startSpace();});
+$('spaceRebirthBtn').addEventListener('click',()=>{$('spaceWin').hidden=true;startGame();});
 
 // ---------- loop ----------
 genWorld();player.x=spawn.x;player.y=spawn.y;focus.x=spawn.x;focus.y=spawn.y;
