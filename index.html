@@ -315,7 +315,7 @@ const COUNTRIES=[
   {id:'gr',name:'Греція',     cx:1560,cy:1370,rx:185,ry:205,tint:'#8cbf5e',fact:'Греція — стародавній храм з колонами 🏛️'},
   {id:'ua',name:'Україна',    cx:2090,cy:930, rx:295,ry:265,tint:'#7cbb60',fact:'Україна — наша рідна! Соняхи 🌻 і тризуб'},
 ];
-const BRIDGES=[{cx:895,cy:560,rx:140,ry:48}]; // Ла-Манш: з'єднує Британію з материком
+const BRIDGES=[{cx:895,cy:560,rx:140,ry:48},{cx:1372,cy:1345,rx:82,ry:62}]; // Ла-Манш (Британія) + перешийок Італія↔Греція
 let freeCam=false;const focus={x:0,y:0};
 function clampFocus(){if(st.scene==='sea'){focus.x=clamp(focus.x,-120,SEA.w+120);focus.y=clamp(focus.y,SEA.shoreY-200,SEA.startY+200);return;}if(st.scene==='europe'){focus.x=clamp(focus.x,-120,EUR.w+120);focus.y=clamp(focus.y,-120,EUR.h+120);return;}const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
 const dressed=()=>st.cloth>=NEED_CLOTH;
