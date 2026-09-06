@@ -337,10 +337,13 @@ const COUNTRIES=[
   {id:'bg',name:'Болгарія',   cx:1720,cy:1320,rx:135,ry:135,tint:'#7cbb60',fact:'Болгарія — троянди 🌹 і церкви'},
   {id:'tr',name:'Туреччина',  cx:1900,cy:1520,rx:180,ry:150,tint:'#8cbf5e',fact:'Туреччина — мечеть 🕌 (країна, не індичка 🦃!)'},
   {id:'pt',name:'Португалія', cx:405, cy:1320,rx:95, ry:158,tint:'#7ab85f',fact:'Португалія — маяк 🗼, кораблі-каравели ⛵ і півник 🐓'},
+  {id:'lo',name:'Росія',      cx:2150,cy:650, rx:120,ry:125,tint:'#74b35a',fact:'Росія — найбільша країна, половина аж в Азії 🐻'},
+  {id:'be',name:'Бельгія',    cx:985, cy:705, rx:78, ry:78, tint:'#7ab85f',fact:'Бельгія — вафлі 🧇, шоколад і Атоміум'},
+  {id:'lu',name:'Люксембург', cx:1085,cy:775, rx:48, ry:48, tint:'#8cbf5e',fact:'Люксембург — маленька країна з великою фортецею 🏰'},
 ];
 const BRIDGES=[{cx:895,cy:560,rx:140,ry:48},{cx:1372,cy:1345,rx:82,ry:62}]; // Ла-Манш (Британія) + перешийок Італія↔Греція
 let freeCam=false;const focus={x:0,y:0};
-function clampFocus(){if(st.scene==='sea'){focus.x=clamp(focus.x,-120,SEA.w+120);focus.y=clamp(focus.y,SEA.shoreY-200,SEA.startY+200);return;}if(st.scene==='europe'){focus.x=clamp(focus.x,-120,EUR.w+120);focus.y=clamp(focus.y,-120,EUR.h+120);return;}const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
+function clampFocus(){if(st.scene==='sea'){focus.x=clamp(focus.x,-120,SEA.w+120);focus.y=clamp(focus.y,SEA.shoreY-200,SEA.startY+200);return;}if(st.scene==='europe'){focus.x=clamp(focus.x,-120,EUR.w+120);focus.y=clamp(focus.y,-120,EUR.h+120);return;}if(st.scene==='inside'){focus.x=clamp(focus.x,-80,IN.w+80);focus.y=clamp(focus.y,-80,IN.h+80);return;}const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
 const dressed=()=>st.cloth>=NEED_CLOTH;
 
 const QUESTS=[
@@ -392,6 +395,14 @@ function updateUI(){
       stepsEl.innerHTML='<div class="step cur"><span class="k">🗺️</span><span>Обійди всю Європу</span></div>';
       questHint.innerHTML=`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
     let h=st.toastT>0?st.toastMsg:'Гуляй Європою! Тапни країну — дізнаєшся про неї';
+    if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
+    return;
+  }
+  if(st.scene==='inside'){
+    const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
+    const c=st.insideCountry||{name:''};const qk='in'+c.name;
+    if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">🚪</span><span>Усередині: '+c.name+'</span></div>';questHint.innerHTML='Роздивись кімнату. Щоб вийти — іди до дверей ▼ знизу.';}
+    let h=st.toastT>0?st.toastMsg:'Іди до дверей ▼ знизу, щоб вийти';
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -482,6 +493,7 @@ function update(dt){
   st.time+=dt;marker.t+=dt;if(st.actCd>0)st.actCd-=dt;
   if(st.scene==='sea'){updateSea(dt);return;}
   if(st.scene==='europe'){updateEurope(dt);return;}
+  if(st.scene==='inside'){updateInside(dt);return;}
   // movement
   let dx=0,dy=0;
   const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
@@ -538,6 +550,7 @@ function tileColor(t,x,y){const h=(x*7+y*13)%5;if(t===DEEP)return h===0?'#1a68a0
 function drawWorld(now){
   if(st.scene==='sea'){drawSea(now);return;}
   if(st.scene==='europe'){drawEurope(now);return;}
+  if(st.scene==='inside'){drawInside(now);return;}
   const vwz=vw/zoom,vhz=vh/zoom;
   if(!freeCam){focus.x=player.x;focus.y=player.y;}
   cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
@@ -611,6 +624,7 @@ const mmOff=document.createElement('canvas');mmOff.width=W;mmOff.height=H;const 
 function drawMinimap(){
   if(st.scene==='sea'){drawSeaMini();return;}
   if(st.scene==='europe'){drawEuropeMini();return;}
+  if(st.scene==='inside'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#17283a';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#f5ecd6';mm.font='700 12px Rubik, sans-serif';mm.textAlign='center';mm.fillText('🚪 Усередині',mmC.width/2,mmC.height/2+4);return;}
   const img=mmo.createImageData(W,H),d=img.data;
   for(let i=0;i<W*H;i++){let c;if(!seen[i])c=[15,28,42];else{const t=tiles[i];c=t===DEEP?[27,111,168]:t===SHALLOW?[58,166,216]:t===SAND?[232,213,154]:[111,191,74];}d[i*4]=c[0];d[i*4+1]=c[1];d[i*4+2]=c[2];d[i*4+3]=255;}
   mmo.putImageData(img,0,0);mm.imageSmoothingEnabled=false;mm.clearRect(0,0,mmC.width,mmC.height);mm.drawImage(mmOff,0,0,mmC.width,mmC.height);
@@ -625,7 +639,7 @@ function drawMinimap(){
 // ================= ЧАСТИНА 2: МОРЕ → ФРАНЦІЯ (за ідеєю Кості) =================
 function layoutHud(){const isl=st.scene==='island';
   $('food').hidden=!isl;$('thirst').hidden=!isl;$('inv').hidden=!isl;
-  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?'Європа 🗺️':'Мапа острова';}
+  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?'Європа 🗺️':st.scene==='inside'?'Усередині 🚪':'Мапа острова';}
 function startSea(){
   st.scene='sea';st.running=true;st.over=false;st.won=true;st.seaWon=false;st.seaProg=0;st.seaInv=1.2;st.time=0;st.toastT=0;
   player.x=SEA.startX;player.y=SEA.startY;player.dir='up';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
@@ -813,8 +827,73 @@ function inEll(x,y,c){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry;return dx*dx+dy*dy
 function europeLand(x,y){for(const c of COUNTRIES)if(inEll(x,y,c))return true;for(const b of BRIDGES)if(inEll(x,y,b))return true;return false;}
 function canStandEU(x,y){return europeLand(x-7,y+4)&&europeLand(x+7,y+4)&&europeLand(x,y-2);}
 function countryAt(x,y){let best=null,bd=Infinity;for(const c of COUNTRIES){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry,d=dx*dx+dy*dy;if(d<=1&&d<bd){bd=d;best=c;}}return best;}
-const EMOJI={fr:'🗼',it:'🍕',es:'🐂',de:'🥨',uk:'🕰️',nl:'🌷',gr:'🏛️',ua:'🌻',pl:'🏰',dk:'🧱',no:'⛵',se:'🐴',fi:'❄️',ee:'🏰',lv:'🌲',lt:'🏯',by:'🕊️',ro:'🦇',md:'🍇',bg:'🌹',tr:'🕌',pt:'🐓'};
-function openInside(c){st.running=false;$('insideName').textContent=c.name;$('insideEmoji').textContent=EMOJI[c.id]||'🏠';$('insideFact').textContent=c.fact;$('inside').hidden=false;sfx('eat');}
+const EMOJI={fr:'🗼',it:'🍕',es:'🐂',de:'🥨',uk:'🕰️',nl:'🌷',gr:'🏛️',ua:'🌻',pl:'🏰',dk:'🧱',no:'⛵',se:'🐴',fi:'❄️',ee:'🏰',lv:'🌲',lt:'🏯',by:'🕊️',ro:'🦇',md:'🍇',bg:'🌹',tr:'🕌',pt:'🐓',lo:'🐻',be:'🧇',lu:'🏰'};
+const IN={w:760,h:560,wall:26,doorW:100};
+function openInside(c){st.insideCountry=c;st.euReturn={x:player.x,y:player.y};st.scene='inside';
+  player.x=IN.w/2;player.y=IN.h-IN.wall-28;player.dir='up';player.moving=false;player.mtx=player.mty=null;
+  freeCam=false;focus.x=player.x;focus.y=player.y;ui.quest='';ui.hint='';ui.time=-1;layoutHud();sfx('eat');
+  toast('Ти всередині! Роздивись і вийди через двері 🚪',3);}
+function exitInside(){st.scene='europe';const r=st.euReturn||{x:EUR.startX,y:EUR.startY};
+  player.x=r.x;player.y=r.y+6;player.mtx=player.mty=null;player.dir='down';player.moving=false;
+  freeCam=false;focus.x=player.x;focus.y=player.y;ui.quest='';ui.hint='';ui.time=-1;layoutHud();sfx('craft');}
+function canStandIN(x,y){const w=IN.wall;
+  if(x<w+8||x>IN.w-w-8)return false;
+  if(y<w+40)return false;
+  if(y>IN.h-w-8){return Math.abs(x-IN.w/2)<IN.doorW/2-4 && y<IN.h+8;}
+  return true;}
+function updateInside(dt){
+  let dx=0,dy=0;
+  const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
+  const ky=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0);
+  if(kx||ky){player.mtx=player.mty=null;dx=kx;dy=ky;}
+  else if(player.mtx!=null){const gx=player.mtx-player.x,gy=player.mty-player.y,gl=Math.hypot(gx,gy);if(gl>4){dx=gx/gl;dy=gy/gl;}else player.mtx=player.mty=null;}
+  const len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}
+  player.moving=len>0.1;
+  if(player.moving){if(Math.abs(dx)>Math.abs(dy))player.dir=dx>0?'right':'left';else player.dir=dy>0?'down':'up';
+    const sp=140*dt,nx=player.x+dx*sp,ny=player.y+dy*sp;
+    if(canStandIN(nx,player.y))player.x=nx;
+    if(canStandIN(player.x,ny))player.y=ny;
+    player.anim+=dt*9;}
+  if(player.y>IN.h-IN.wall+2&&Math.abs(player.x-IN.w/2)<IN.doorW/2){exitInside();return;}
+  for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.4)floats.splice(i,1);}}
+function drawInside(now){
+  const vwz=vw/zoom,vhz=vh/zoom,tsec=now/1000,c=st.insideCountry||{name:'',id:''};
+  if(!freeCam){focus.x=player.x;focus.y=player.y;}
+  focus.x=clamp(focus.x,IN.w/2-Math.max(0,(IN.w-vwz)/2)-10,IN.w/2+Math.max(0,(IN.w-vwz)/2)+10);
+  focus.y=clamp(focus.y,IN.h/2-Math.max(0,(IN.h-vhz)/2)-10,IN.h/2+Math.max(0,(IN.h-vhz)/2)+10);
+  cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
+  ctx.setTransform(dpr*zoom,0,0,dpr*zoom,-cam.x*dpr*zoom,-cam.y*dpr*zoom);
+  // dark surround
+  ctx.fillStyle='#0d1622';ctx.fillRect(cam.x-40,cam.y-40,vwz+80,vhz+80);
+  const w=IN.wall;
+  // floor tiles
+  for(let ty=w;ty<IN.h-w;ty+=40)for(let tx=w;tx<IN.w-w;tx+=40){const odd=((tx/40|0)+(ty/40|0))%2;ctx.fillStyle=odd?'#c9a877':'#d8b98a';ctx.fillRect(tx,ty,40,40);}
+  // walls
+  ctx.fillStyle='#8a6d4a';ctx.fillRect(0,0,IN.w,w);ctx.fillRect(0,IN.h-w,IN.w,w);ctx.fillRect(0,0,w,IN.h);ctx.fillRect(IN.w-w,0,w,IN.h);
+  ctx.fillStyle='#6f5638';ctx.fillRect(0,w-4,IN.w,4);
+  // door gap (bottom)
+  ctx.fillStyle='#3a2a18';ctx.fillRect(IN.w/2-IN.doorW/2,IN.h-w,IN.doorW,w);
+  ctx.fillStyle='#7ec8ff';ctx.fillRect(IN.w/2-IN.doorW/2+6,IN.h-w+3,IN.doorW-12,w-6);
+  ctx.font='700 12px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#0f1c2a';ctx.fillText('▼ ВИХІД',IN.w/2,IN.h-w-6);
+  // flag on back wall + name
+  drawFlag(IN.w/2,w+14,c.id);
+  ctx.font='700 16px Rubik, sans-serif';ctx.fillStyle='#f5ecd6';ctx.fillText(c.name,IN.w/2,w+52);
+  // rug
+  ctx.fillStyle='#9c3b3b';ctx.beginPath();ctx.ellipse(IN.w/2,IN.h/2+30,120,70,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#b85555';ctx.beginPath();ctx.ellipse(IN.w/2,IN.h/2+30,96,54,0,0,Math.PI*2);ctx.fill();
+  // centerpiece emoji
+  ctx.font='90px serif';ctx.textAlign='center';ctx.fillText(EMOJI[c.id]||'🏛️',IN.w/2,IN.h/2+40);
+  // furniture: shelves/tables/plant
+  ctx.fillStyle='#8a5a2b';ctx.fillRect(w+18,w+70,70,22);ctx.fillRect(IN.w-w-88,w+70,70,22);
+  ctx.fillStyle='#a0713f';ctx.fillRect(w+18,w+70,70,5);ctx.fillRect(IN.w-w-88,w+70,70,5);
+  ctx.fillStyle='#3fa64a';ctx.beginPath();ctx.arc(w+40,IN.h-w-40,16,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a5a2b';ctx.fillRect(w+36,IN.h-w-30,8,14);
+  ctx.fillStyle='#3fa64a';ctx.beginPath();ctx.arc(IN.w-w-40,IN.h-w-40,16,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a5a2b';ctx.fillRect(IN.w-w-44,IN.h-w-30,8,14);
+  // marker
+  if(marker.t<0.6){const a=1-marker.t/0.6,rr=8+marker.t*30;ctx.strokeStyle=`rgba(245,236,214,${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,rr,0,Math.PI*2);ctx.stroke();}
+  drawPlayer(tsec);
+  ctx.font='700 11px Rubik, sans-serif';ctx.textAlign='center';
+  for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-.8)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0f1c2a';ctx.fillText(f.s,f.x+1,f.y-f.t*26+1);ctx.fillStyle='#f5ecd6';ctx.fillText(f.s,f.x,f.y-f.t*26);}
+  ctx.globalAlpha=1;}
 function goToStart(){st.running=false;st.over=false;st.scene='island';const ins=$('inside');if(ins)ins.hidden=true;layoutHud();$('start').hidden=false;sfx('craft');}
 function startEurope(){
   st.scene='europe';st.running=true;st.over=false;st.won=true;st.cloth=NEED_CLOTH;st.time=0;st.toastT=0;st.euWon=false;st.euSeen={};
@@ -892,12 +971,15 @@ function drawFlag(x,y,id){const w=30,h=20,lx=x-w/2;
     case 'ee':Hb('#0072CE','#000','#fff');break;
     case 'lv':ctx.fillStyle='#9E3039';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#fff';ctx.fillRect(lx,y+h*0.4,w,h*0.2);break;
     case 'lt':Hb('#FDB913','#006A44','#C1272D');break;
-    case 'by':ctx.fillStyle='#CE1720';ctx.fillRect(lx,y,w,h*0.66);ctx.fillStyle='#4AA657';ctx.fillRect(lx,y+h*0.66,w,h*0.34);ctx.fillStyle='#fff';ctx.fillRect(lx,y,4,h);break;
+    case 'by':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#C8102E';ctx.fillRect(lx,y+h*0.38,w,h*0.24);break;
     case 'ro':Vb('#002B7F','#FCD116','#CE1126');break;
     case 'md':Vb('#0046AE','#FFD200','#CC092F');break;
     case 'bg':Hb('#fff','#00966E','#D62612');break;
     case 'tr':ctx.fillStyle='#E30A17';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(lx+w*0.42,y+h/2,6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#E30A17';ctx.beginPath();ctx.arc(lx+w*0.48,y+h/2,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='700 9px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+w*0.64,y+h/2+3.5);break;
     case 'pt':ctx.fillStyle='#006600';ctx.fillRect(lx,y,w*0.4,h);ctx.fillStyle='#D52B1E';ctx.fillRect(lx+w*0.4,y,w*0.6,h);ctx.fillStyle='#FFD700';ctx.beginPath();ctx.arc(lx+w*0.4,y+h/2,3.5,0,Math.PI*2);ctx.fill();break;
+    case 'lo':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#4aa3e0';ctx.fillRect(lx,y+h*0.36,w,h*0.28);break;
+    case 'be':Vb('#111111','#FDDA24','#EF3340');break;
+    case 'lu':Hb('#ED2939','#fff','#00A1DE');break;
     default:ctx.fillStyle='#ccc';ctx.fillRect(lx,y,w,h);
   }
   ctx.strokeStyle='#0f1c2a';ctx.lineWidth=1;ctx.strokeRect(lx,y,w,h);
@@ -926,6 +1008,9 @@ function drawLandmark(c,tsec){const x=c.cx,y=c.cy;
     case 'bg':euChurch(x,y,'#c9a24a');break;
     case 'tr':euMosque(x,y);break;
     case 'pt':euLighthouse(x,y);break;
+    case 'lo':euChurch(x,y,'#c0392b');break;
+    case 'be':euAtomium(x,y);break;
+    case 'lu':euCastle(x,y);break;
   }
 }
 function shadow(x,y,r){ctx.fillStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.ellipse(x,y+4,r,r*0.24,0,0,Math.PI*2);ctx.fill();}
@@ -1017,6 +1102,10 @@ function euLighthouse(x,y){shadow(x,y,16);const bands=6;
   ctx.fillStyle='#ffe680';ctx.fillRect(x-4,topY-7,8,6);
   ctx.fillStyle='#c0392b';ctx.beginPath();ctx.moveTo(x-8,topY-8);ctx.lineTo(x,topY-16);ctx.lineTo(x+8,topY-8);ctx.closePath();ctx.fill();
   const g=(Math.sin(performance.now()/300)+1)/2;ctx.fillStyle=`rgba(255,230,120,${.18+g*.3})`;ctx.beginPath();ctx.arc(x,topY-4,16,0,Math.PI*2);ctx.fill();}
+function euAtomium(x,y){shadow(x,y,26);const r=8,pts=[[0,0],[-22,-22],[22,-22],[-22,22],[22,22],[0,-32],[0,32],[-30,0],[30,0]],cx=x,cy=y-34;
+  ctx.strokeStyle='#9aa7b0';ctx.lineWidth=3;
+  for(const[a,b]of [[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],[1,5],[2,5],[3,6],[4,6],[1,7],[3,7],[2,8],[4,8]]){ctx.beginPath();ctx.moveTo(cx+pts[a][0],cy+pts[a][1]);ctx.lineTo(cx+pts[b][0],cy+pts[b][1]);ctx.stroke();}
+  for(const[px,py]of pts){ctx.fillStyle='#c0c8ce';ctx.beginPath();ctx.arc(cx+px,cy+py,r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#eef2f5';ctx.beginPath();ctx.arc(cx+px-2,cy+py-2,3,0,Math.PI*2);ctx.fill();}}
 function drawShipEU(){const s=EUR.ship,x=s.x,y=s.y,bob=Math.sin(performance.now()/500)*2;
   ctx.fillStyle='rgba(0,0,0,.16)';ctx.beginPath();ctx.ellipse(x,y+12,26,7,0,0,Math.PI*2);ctx.fill();
   ctx.save();ctx.translate(x,y+bob);
@@ -1068,6 +1157,7 @@ function tapWorld(clientX,clientY){
     for(const c of COUNTRIES){if(Math.abs(wx-c.cx)<48&&wy<c.cy+24&&wy>c.cy-100){openInside(c);player.mtx=player.mty=null;return;}}
     player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;
   }
+  if(st.scene==='inside'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
   // fallen items first — they sit near the palm base, so they take priority over the tree
   let dp=null,dd=32;for(const d of drops){const dist=Math.hypot(d.x-wx,d.y-wy);if(dist<dd){dd=dist;dp=d;}}
   if(dp){menuCtx={type:'drop',obj:dp};
