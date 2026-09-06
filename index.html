@@ -138,7 +138,7 @@
     <div class="row" style="margin-bottom:14px">
       <button class="btn" id="playBtn">🏝️ 1. Острів</button>
       <button class="btn" id="seaBtn">⛵ 2. Океан → Франція</button>
-      <button class="btn" id="euBtn" style="background:var(--panel-2);color:var(--muted);box-shadow:0 4px 0 var(--ink)">🇪🇺 3. Європа (скоро)</button>
+      <button class="btn" id="euBtn">🇪🇺 3. Європа</button>
     </div>
     <div class="credit">Правила придумав Костя. Пальма дає 6 листків, 1 деревину і 3 кокоси — як він і сказав.</div>
   </div>
@@ -185,8 +185,24 @@
       <p>Хочеш додати ще щось (досліджувати світ як у Майнкрафті)? Запиши голосове — зробимо Частину 3.</p>
     </div>
     <div class="row">
-      <button class="btn" id="rebirthBtn">Переродження 🔄 (почати спочатку)</button>
+      <button class="btn" id="toEuropeBtn">🗺️ Гуляти Європою (Частина 3)</button>
+      <button class="btn" id="rebirthBtn" style="background:var(--panel-2);color:var(--cream);box-shadow:0 4px 0 var(--ink)">Переродження 🔄</button>
       <button class="btn" id="exploreBtn" style="background:var(--panel-2);color:var(--cream);box-shadow:0 4px 0 var(--ink)">Гуляти морем 🌊</button>
+    </div>
+  </div>
+</div>
+
+<div id="europeWin" class="overlay" hidden>
+  <div class="panel">
+    <div class="eyebrow">Європу пройдено 🎉🇪🇺</div>
+    <h2>Ти обійшов усю Європу!</h2>
+    <p>Час: <b id="euTime">0:00</b>. Ти побував у всіх країнах — Франція, Італія, Іспанія, Німеччина, Британія, Нідерланди, Греція, Польща і рідна Україна 🇺🇦. Справжній мандрівник! 🏆</p>
+    <div class="letter">
+      <p><b>Костя,</b> ти пройшов усі 3 частини гри, яку сам придумав! 🎮 Хочеш додати щось іще? Запиши голосове — і зробимо.</p>
+    </div>
+    <div class="row">
+      <button class="btn" id="euRebirthBtn">Переродження 🔄 (спочатку)</button>
+      <button class="btn" id="euExploreBtn" style="background:var(--panel-2);color:var(--cream);box-shadow:0 4px 0 var(--ink)">Гуляти далі 🗺️</button>
     </div>
   </div>
 </div>
@@ -282,12 +298,26 @@ const player={x:0,y:0,dir:'down',moving:false,anim:0,hunger:100,thirst:100,hurt:
 const marker={x:0,y:0,t:9,kind:'go'};
 const inv={wood:0,fiber:0,axe:0};
 const invested={wood:0,fiber:0};
-const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false,coco:0};
+const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false,coco:0,euVisited:0,euWon:false,euSeen:{}};
 const keys={};
 const SEA={w:1600,startX:800,startY:3500,shoreY:320};
 const sharks=[],seaFish=[],wakes=[],seaCoco=[];
+// ---- Європа (частина 3) ----
+const EUR={w:2800,h:2200,startX:920,startY:1090};
+const COUNTRIES=[
+  {id:'uk',name:'Британія',   cx:640, cy:520, rx:180,ry:240,tint:'#6fae5a',fact:'Британія — Біг-Бен 🕰️ і червоний автобус 🚌'},
+  {id:'nl',name:'Нідерланди', cx:1050,cy:560, rx:135,ry:150,tint:'#7ab85f',fact:'Нідерланди — вітряк і тюльпани 🌷'},
+  {id:'de',name:'Німеччина',  cx:1270,cy:780, rx:230,ry:230,tint:'#74b35a',fact:'Німеччина — Бранденбурзькі ворота і крендель 🥨'},
+  {id:'pl',name:'Польща',     cx:1660,cy:740, rx:210,ry:205,tint:'#7cbb60',fact:'Польща — старий замок 🏰'},
+  {id:'fr',name:'Франція',    cx:920, cy:940, rx:255,ry:255,tint:'#6fb257',fact:'Франція — Ейфелева вежа 🗼 і круасан 🥐. Бонжур!'},
+  {id:'es',name:'Іспанія',    cx:650, cy:1290,rx:265,ry:235,tint:'#8cbf5e',fact:'Іспанія — оле! Бик 🐂 і Саграда Фамілія'},
+  {id:'it',name:'Італія',     cx:1235,cy:1230,rx:145,ry:305,tint:'#7ab85f',fact:'Італія — піца 🍕, Колізей і похила вежа!'},
+  {id:'gr',name:'Греція',     cx:1560,cy:1370,rx:185,ry:205,tint:'#8cbf5e',fact:'Греція — стародавній храм з колонами 🏛️'},
+  {id:'ua',name:'Україна',    cx:2090,cy:930, rx:295,ry:265,tint:'#7cbb60',fact:'Україна — наша рідна! Соняхи 🌻 і тризуб'},
+];
+const BRIDGES=[{cx:895,cy:560,rx:140,ry:48}]; // Ла-Манш: з'єднує Британію з материком
 let freeCam=false;const focus={x:0,y:0};
-function clampFocus(){if(st.scene==='sea'){focus.x=clamp(focus.x,-120,SEA.w+120);focus.y=clamp(focus.y,SEA.shoreY-200,SEA.startY+200);return;}const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
+function clampFocus(){if(st.scene==='sea'){focus.x=clamp(focus.x,-120,SEA.w+120);focus.y=clamp(focus.y,SEA.shoreY-200,SEA.startY+200);return;}if(st.scene==='europe'){focus.x=clamp(focus.x,-120,EUR.w+120);focus.y=clamp(focus.y,-120,EUR.h+120);return;}const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
 const dressed=()=>st.cloth>=NEED_CLOTH;
 
 const QUESTS=[
@@ -329,6 +359,16 @@ function updateUI(){
       stepsEl.innerHTML='<div class="step cur"><span class="k">⛵</span><span>Пливи до Франції 🇫🇷</span></div>';
       questHint.innerHTML=`Дійшов: <b>${Math.round(st.seaProg)}%</b> 🗼 &nbsp;·&nbsp; 🥥 ${st.coco}/10`;}
     let h=st.toastT>0?st.toastMsg:(st.seaProg>72?'Вже близько! Тримайся 🗼':'Обпливай акул 🦈 і риб 🐟');
+    if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
+    return;
+  }
+  if(st.scene==='europe'){
+    const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
+    const qk='eu'+st.euVisited;
+    if(ui.quest!==qk){ui.quest=qk;
+      stepsEl.innerHTML='<div class="step cur"><span class="k">🗺️</span><span>Обійди всю Європу</span></div>';
+      questHint.innerHTML=`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
+    let h=st.toastT>0?st.toastMsg:'Гуляй Європою! Тапни країну — дізнаєшся про неї';
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -418,6 +458,7 @@ function update(dt){
   if(!st.running)return;
   st.time+=dt;marker.t+=dt;if(st.actCd>0)st.actCd-=dt;
   if(st.scene==='sea'){updateSea(dt);return;}
+  if(st.scene==='europe'){updateEurope(dt);return;}
   // movement
   let dx=0,dy=0;
   const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
@@ -473,6 +514,7 @@ function update(dt){
 function tileColor(t,x,y){const h=(x*7+y*13)%5;if(t===DEEP)return h===0?'#1a68a0':'#1b6fa8';if(t===SHALLOW)return h===0?'#38a0d2':'#3aa6d8';if(t===SAND)return h===0?'#e2cd8e':'#e8d59a';return h===0?'#63b043':'#6fbf4a';}
 function drawWorld(now){
   if(st.scene==='sea'){drawSea(now);return;}
+  if(st.scene==='europe'){drawEurope(now);return;}
   const vwz=vw/zoom,vhz=vh/zoom;
   if(!freeCam){focus.x=player.x;focus.y=player.y;}
   cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
@@ -545,6 +587,7 @@ function drawPlayer(tsec){
 const mmOff=document.createElement('canvas');mmOff.width=W;mmOff.height=H;const mmo=mmOff.getContext('2d');
 function drawMinimap(){
   if(st.scene==='sea'){drawSeaMini();return;}
+  if(st.scene==='europe'){drawEuropeMini();return;}
   const img=mmo.createImageData(W,H),d=img.data;
   for(let i=0;i<W*H;i++){let c;if(!seen[i])c=[15,28,42];else{const t=tiles[i];c=t===DEEP?[27,111,168]:t===SHALLOW?[58,166,216]:t===SAND?[232,213,154]:[111,191,74];}d[i*4]=c[0];d[i*4+1]=c[1];d[i*4+2]=c[2];d[i*4+3]=255;}
   mmo.putImageData(img,0,0);mm.imageSmoothingEnabled=false;mm.clearRect(0,0,mmC.width,mmC.height);mm.drawImage(mmOff,0,0,mmC.width,mmC.height);
@@ -557,9 +600,9 @@ function drawMinimap(){
 }
 
 // ================= ЧАСТИНА 2: МОРЕ → ФРАНЦІЯ (за ідеєю Кості) =================
-function layoutHud(){const sea=st.scene==='sea';
-  $('food').hidden=sea;$('thirst').hidden=sea;$('inv').hidden=sea;
-  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=sea?'До Франції 🗼':'Мапа острова';}
+function layoutHud(){const isl=st.scene==='island';
+  $('food').hidden=!isl;$('thirst').hidden=!isl;$('inv').hidden=!isl;
+  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?'Європа 🗺️':'Мапа острова';}
 function startSea(){
   st.scene='sea';st.running=true;st.over=false;st.won=true;st.seaWon=false;st.seaProg=0;st.seaInv=1.2;st.time=0;st.toastT=0;
   player.x=SEA.startX;player.y=SEA.startY;player.dir='up';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
@@ -742,6 +785,155 @@ function drawSeaMini(){
 }
 // =============================================================================
 
+// ================= ЧАСТИНА 3: ЄВРОПА (за ідеєю Кості) =================
+function inEll(x,y,c){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry;return dx*dx+dy*dy<=1;}
+function europeLand(x,y){for(const c of COUNTRIES)if(inEll(x,y,c))return true;for(const b of BRIDGES)if(inEll(x,y,b))return true;return false;}
+function canStandEU(x,y){return europeLand(x-7,y+4)&&europeLand(x+7,y+4)&&europeLand(x,y-2);}
+function countryAt(x,y){for(const c of COUNTRIES)if(inEll(x,y,c))return c;return null;}
+function startEurope(){
+  st.scene='europe';st.running=true;st.over=false;st.won=true;st.cloth=NEED_CLOTH;st.time=0;st.toastT=0;st.euWon=false;st.euSeen={};
+  player.x=EUR.startX;player.y=EUR.startY;player.dir='down';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
+  freeCam=false;focus.x=player.x;focus.y=player.y;floats.length=0;
+  st.euSeen['fr']=true;st.euVisited=1; // ти приплив у Францію
+  ui.quest='';ui.hint='';ui.time=-1;layoutHud();
+  $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('menu').hidden=true;
+  toast('Ти у Європі, у Франції! 🇫🇷 Гуляй і відвідай усі країни',3.6);
+}
+function europeWin(){if(st.euWon)return;st.euWon=true;sfx('win');$('euTime').textContent=fmtTime(st.time);setTimeout(()=>{if(st.scene==='europe'&&st.euWon){st.running=false;$('europeWin').hidden=false;}},1300);}
+function updateEurope(dt){
+  let dx=0,dy=0;
+  const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
+  const ky=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0);
+  if(kx||ky){player.mtx=player.mty=null;dx=kx;dy=ky;}
+  else if(player.mtx!=null){const gx=player.mtx-player.x,gy=player.mty-player.y,gl=Math.hypot(gx,gy);if(gl>4){dx=gx/gl;dy=gy/gl;}else player.mtx=player.mty=null;}
+  const len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}
+  player.moving=len>0.1;
+  if(player.moving){if(Math.abs(dx)>Math.abs(dy))player.dir=dx>0?'right':'left';else player.dir=dy>0?'down':'up';
+    const sp=155*dt,nx=player.x+dx*sp,ny=player.y+dy*sp;let bx=false,by=false;
+    if(canStandEU(nx,player.y))player.x=nx;else bx=true;
+    if(canStandEU(player.x,ny))player.y=ny;else by=true;
+    if(bx&&by)player.mtx=player.mty=null;
+    player.anim+=dt*9;}
+  const c=countryAt(player.x,player.y);
+  if(c&&!st.euSeen[c.id]){st.euSeen[c.id]=true;st.euVisited++;sfx('craft');toast('Нова країна: '+c.name+'! 🏳️',2.6);floats.push({x:player.x,y:player.y-46,s:'✓ '+c.name,t:0});
+    if(st.euVisited>=COUNTRIES.length)europeWin();}
+  for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.4)floats.splice(i,1);}
+}
+function drawEurope(now){
+  const vwz=vw/zoom,vhz=vh/zoom,tsec=now/1000;
+  if(!freeCam){focus.x=player.x;focus.y=player.y;}
+  clampFocus();cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
+  ctx.setTransform(dpr*zoom,0,0,dpr*zoom,-cam.x*dpr*zoom,-cam.y*dpr*zoom);
+  ctx.fillStyle='#1b6fa8';ctx.fillRect(cam.x-40,cam.y-40,vwz+80,vhz+80);
+  const gs=46,gx0=Math.floor((cam.x-40)/gs)*gs,gy0=Math.floor((cam.y-40)/gs)*gs;
+  ctx.fillStyle='rgba(255,255,255,.08)';
+  for(let gy=gy0;gy<cam.y+vhz+40;gy+=gs)for(let gx=gx0;gx<cam.x+vwz+40;gx+=gs){const ci=Math.floor(gx/gs),ri=Math.floor(gy/gs),ph=(ci*3+ri*5+Math.floor(tsec*2))%5;ctx.fillRect(gx+5+ph*3,gy+13,10,2);}
+  for(const b of BRIDGES){ctx.fillStyle='#6fb257';ctx.beginPath();ctx.ellipse(b.cx,b.cy,b.rx,b.ry,0,0,Math.PI*2);ctx.fill();}
+  for(const c of COUNTRIES){ctx.fillStyle='#e8d59a';ctx.beginPath();ctx.ellipse(c.cx,c.cy,c.rx+9,c.ry+9,0,0,Math.PI*2);ctx.fill();}
+  for(const c of COUNTRIES){ctx.fillStyle=c.tint;ctx.beginPath();ctx.ellipse(c.cx,c.cy,c.rx,c.ry,0,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='rgba(70,150,50,.5)';
+  for(const c of COUNTRIES){for(let k=0;k<44;k++){const a=k*2.399,r=Math.sqrt((k+1)/44);const gx=c.cx+Math.cos(a)*c.rx*r*0.92,gy=c.cy+Math.sin(a)*c.ry*r*0.92;ctx.fillRect(gx,gy,2,4);}}
+  if(marker.t<0.6){const a=1-marker.t/0.6,rr=8+marker.t*30;ctx.strokeStyle=`rgba(245,236,214,${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,rr,0,Math.PI*2);ctx.stroke();}
+  const ents=[],iv=(x,y)=>x>cam.x-140&&x<cam.x+vwz+140&&y>cam.y-170&&y<cam.y+vhz+140;
+  for(const c of COUNTRIES)if(iv(c.cx,c.cy))ents.push({y:c.cy,f:()=>drawLandmark(c,tsec)});
+  ents.push({y:player.y,f:()=>drawPlayer(tsec)});
+  ents.sort((a,b)=>a.y-b.y);for(const e of ents)e.f();
+  for(const c of COUNTRIES){if(!iv(c.cx,c.cy))continue;const ly=c.cy-c.ry+4;drawFlag(c.cx,ly,c.id);
+    ctx.font='700 15px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#0f1c2a';ctx.fillText(c.name,c.cx+1,ly+36+1);ctx.fillStyle=st.euSeen[c.id]?'#bff0a8':'#fff';ctx.fillText(c.name,c.cx,ly+36);}
+  ctx.font='700 12px Rubik, sans-serif';ctx.textAlign='center';
+  for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-.8)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0f1c2a';ctx.fillText(f.s,f.x+1,f.y-f.t*26+1);ctx.fillStyle='#f5ecd6';ctx.fillText(f.s,f.x,f.y-f.t*26);}
+  ctx.globalAlpha=1;
+}
+function drawFlag(x,y,id){const w=30,h=20,lx=x-w/2;
+  const Hb=(a,b,c)=>{ctx.fillStyle=a;ctx.fillRect(lx,y,w,h/3);ctx.fillStyle=b;ctx.fillRect(lx,y+h/3,w,h/3);ctx.fillStyle=c;ctx.fillRect(lx,y+2*h/3,w,h/3);};
+  const Vb=(a,b,c)=>{ctx.fillStyle=a;ctx.fillRect(lx,y,w/3,h);ctx.fillStyle=b;ctx.fillRect(lx+w/3,y,w/3,h);ctx.fillStyle=c;ctx.fillRect(lx+2*w/3,y,w/3,h);};
+  switch(id){
+    case 'fr':Vb('#0055A4','#fff','#EF4135');break;
+    case 'it':Vb('#009246','#fff','#CE2B37');break;
+    case 'de':Hb('#161616','#DD0000','#FFCE00');break;
+    case 'nl':Hb('#AE1C28','#fff','#21468B');break;
+    case 'es':ctx.fillStyle='#AA151B';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#F1BF00';ctx.fillRect(lx,y+h*0.28,w,h*0.44);break;
+    case 'ua':ctx.fillStyle='#0057B7';ctx.fillRect(lx,y,w,h/2);ctx.fillStyle='#FFD700';ctx.fillRect(lx,y+h/2,w,h/2);break;
+    case 'pl':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h/2);ctx.fillStyle='#DC143C';ctx.fillRect(lx,y+h/2,w,h/2);break;
+    case 'gr':ctx.fillStyle='#0D5EAF';ctx.fillRect(lx,y,w,h);for(let i=1;i<5;i+=2){ctx.fillStyle='#fff';ctx.fillRect(lx,y+i*(h/5),w,h/5);}ctx.fillStyle='#0D5EAF';ctx.fillRect(lx,y,h*0.55,h*0.55);ctx.fillStyle='#fff';ctx.fillRect(lx+h*0.22,y,h*0.11,h*0.55);ctx.fillRect(lx,y+h*0.22,h*0.55,h*0.11);break;
+    case 'uk':ctx.fillStyle='#012169';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#fff';ctx.fillRect(lx+w/2-3,y,6,h);ctx.fillRect(lx,y+h/2-3,w,6);ctx.fillStyle='#C8102E';ctx.fillRect(lx+w/2-1.5,y,3,h);ctx.fillRect(lx,y+h/2-1.5,w,3);break;
+    default:ctx.fillStyle='#ccc';ctx.fillRect(lx,y,w,h);
+  }
+  ctx.strokeStyle='#0f1c2a';ctx.lineWidth=1;ctx.strokeRect(lx,y,w,h);
+}
+function drawLandmark(c,tsec){const x=c.cx,y=c.cy;
+  switch(c.id){
+    case 'fr':euEiffel(x,y);break;
+    case 'it':euColosseum(x,y);break;
+    case 'es':euBull(x,y);break;
+    case 'de':euGate(x,y);break;
+    case 'uk':euBigBen(x,y);break;
+    case 'nl':euWindmill(x,y,tsec);break;
+    case 'gr':euTemple(x,y);break;
+    case 'ua':euSunflower(x,y,tsec);break;
+    case 'pl':euCastle(x,y);break;
+  }
+}
+function shadow(x,y,r){ctx.fillStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.ellipse(x,y+4,r,r*0.24,0,0,Math.PI*2);ctx.fill();}
+function euEiffel(x,y){const H=98,b=22,w1=10,w2=5,wt=2,y0=y+6,y1=y0-H*0.3,y2=y0-H*0.63,y3=y0-H*0.9,yT=y0-H;
+  shadow(x,y,26);ctx.fillStyle='#6b4a2b';const seg=(a,ha,bb,hb)=>{ctx.beginPath();ctx.moveTo(x-ha,a);ctx.lineTo(x+ha,a);ctx.lineTo(x+hb,bb);ctx.lineTo(x-hb,bb);ctx.closePath();ctx.fill();};
+  ctx.beginPath();ctx.moveTo(x-b,y0);ctx.lineTo(x-b+7,y0);ctx.lineTo(x-w1+1,y1);ctx.lineTo(x-w1-3,y1);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+b,y0);ctx.lineTo(x+b-7,y0);ctx.lineTo(x+w1-1,y1);ctx.lineTo(x+w1+3,y1);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#6b4a2b';ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y1+2,b-9,Math.PI,2*Math.PI);ctx.stroke();
+  ctx.fillStyle='#6b4a2b';ctx.fillRect(x-b+2,y1-4,2*b-4,4);seg(y1,w1,y2,w2);ctx.fillRect(x-w2-4,y2-3,2*w2+8,3);seg(y2,w2,y3,w2*0.6);seg(y3,w2*0.6,yT,wt);ctx.fillRect(x-1,yT-10,2,10);}
+function euColosseum(x,y){shadow(x,y,46);
+  ctx.fillStyle='#d8c49a';ctx.beginPath();ctx.moveTo(x-44,y+4);ctx.lineTo(x-44,y-24);ctx.quadraticCurveTo(x,y-48,x+44,y-24);ctx.lineTo(x+44,y+4);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#7a6540';for(let r=0;r<2;r++)for(let i=-3;i<=3;i++)ctx.fillRect(x+i*12-3,y-8-r*15,6,10);
+  ctx.fillStyle='#7ab85f';ctx.beginPath();ctx.moveTo(x+18,y-42);ctx.lineTo(x+44,y-24);ctx.lineTo(x+44,y-42);ctx.closePath();ctx.fill();}
+function euBull(x,y){shadow(x,y,30);ctx.fillStyle='#2b2b2b';
+  ctx.beginPath();ctx.ellipse(x,y-14,24,13,0,0,Math.PI*2);ctx.fill();
+  ctx.fillRect(x-20,y-8,5,12);ctx.fillRect(x+13,y-8,5,12);
+  ctx.beginPath();ctx.ellipse(x+24,y-22,10,8,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#eee';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+30,y-28);ctx.lineTo(x+37,y-33);ctx.moveTo(x+21,y-28);ctx.lineTo(x+17,y-36);ctx.stroke();
+  ctx.fillStyle='#c0392b';ctx.beginPath();ctx.arc(x+29,y-21,1.6,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#2b2b2b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-24,y-16);ctx.lineTo(x-31,y-6);ctx.stroke();}
+function euGate(x,y){shadow(x,y,40);ctx.fillStyle='#e9e4d8';
+  for(let i=-2;i<=2;i++)ctx.fillRect(x+i*16-4,y-34,8,38);
+  ctx.fillRect(x-40,y-46,80,12);ctx.fillStyle='#cfc7b6';ctx.fillRect(x-42,y-2,84,5);
+  ctx.fillStyle='#8a7d5a';ctx.fillRect(x-12,y-58,24,10);ctx.beginPath();ctx.ellipse(x+9,y-60,6,4,0,0,Math.PI*2);ctx.fill();ctx.fillRect(x-12,y-64,3,6);}
+function euBigBen(x,y){shadow(x,y,18);
+  ctx.fillStyle='#b99a5b';ctx.fillRect(x-12,y-72,24,76);ctx.fillStyle='#a5854a';ctx.fillRect(x-12,y-72,24,3);
+  ctx.fillStyle='#efe6cf';ctx.beginPath();ctx.arc(x,y-56,8,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#2b2b2b';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y-56);ctx.lineTo(x,y-62);ctx.moveTo(x,y-56);ctx.lineTo(x+4,y-54);ctx.stroke();
+  ctx.fillStyle='#5a7d3a';ctx.beginPath();ctx.moveTo(x-15,y-72);ctx.lineTo(x,y-90);ctx.lineTo(x+15,y-72);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#c0392b';ctx.fillRect(x+16,y-11,24,13);ctx.fillStyle='#bfe3f5';ctx.fillRect(x+19,y-9,17,5);ctx.fillStyle='#222';ctx.beginPath();ctx.arc(x+22,y+3,3,0,Math.PI*2);ctx.arc(x+34,y+3,3,0,Math.PI*2);ctx.fill();}
+function euWindmill(x,y,tsec){shadow(x,y,20);
+  ctx.fillStyle='#c8a26a';ctx.beginPath();ctx.moveTo(x-14,y+4);ctx.lineTo(x-9,y-40);ctx.lineTo(x+9,y-40);ctx.lineTo(x+14,y+4);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.moveTo(x-11,y-40);ctx.lineTo(x,y-54);ctx.lineTo(x+11,y-40);ctx.closePath();ctx.fill();
+  ctx.save();ctx.translate(x,y-42);ctx.rotate(tsec*1.2);for(let i=0;i<4;i++){ctx.rotate(Math.PI/2);ctx.strokeStyle='#efe6cf';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-24);ctx.stroke();ctx.fillStyle='#d8c49a';ctx.fillRect(-3,-24,6,11);}ctx.restore();
+  ['#e0457b','#ff5bd0','#ffcf3a'].forEach((col,i)=>{const tx=x-16+i*16;ctx.strokeStyle='#2e8b3a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx,y+2);ctx.lineTo(tx,y-6);ctx.stroke();ctx.fillStyle=col;ctx.beginPath();ctx.arc(tx,y-8,3,0,Math.PI*2);ctx.fill();});}
+function euTemple(x,y){shadow(x,y,34);ctx.fillStyle='#eee7d6';
+  for(let i=-3;i<=3;i++)ctx.fillRect(x+i*10-3,y-30,6,32);
+  ctx.fillRect(x-34,y-2,68,5);ctx.fillRect(x-36,y-38,72,8);
+  ctx.beginPath();ctx.moveTo(x-38,y-38);ctx.lineTo(x,y-54);ctx.lineTo(x+38,y-38);ctx.closePath();ctx.fill();}
+function euSunflower(x,y,tsec){shadow(x,y,26);
+  ctx.strokeStyle='#e8b93b';ctx.lineWidth=2;for(let i=-2;i<=2;i++){const wx=x+i*9+22;ctx.beginPath();ctx.moveTo(wx,y+2);ctx.lineTo(wx,y-16);ctx.stroke();ctx.fillStyle='#f0c94a';ctx.beginPath();ctx.ellipse(wx,y-18,3,6,0,0,Math.PI*2);ctx.fill();}
+  const sx=x-6,sy=y-46;ctx.strokeStyle='#2e8b3a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sx,y);ctx.lineTo(sx,sy);ctx.stroke();
+  ctx.fillStyle='#3fa64a';ctx.beginPath();ctx.ellipse(sx+9,sy+20,8,3,0.6,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#f5b301';for(let i=0;i<12;i++){const a=i/12*Math.PI*2+tsec*0.3;ctx.beginPath();ctx.ellipse(sx+Math.cos(a)*15,sy+Math.sin(a)*15,5,3,a,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='#6b3d1e';ctx.beginPath();ctx.arc(sx,sy,10,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#0057B7';ctx.fillRect(x-38,y-30,18,22);ctx.strokeStyle='#FFD700';ctx.lineWidth=2;const tzx=x-29,tzy=y-11;ctx.beginPath();ctx.moveTo(tzx,tzy);ctx.lineTo(tzx,tzy-15);ctx.moveTo(tzx-6,tzy-15);ctx.lineTo(tzx-6,tzy-7);ctx.moveTo(tzx+6,tzy-15);ctx.lineTo(tzx+6,tzy-7);ctx.stroke();}
+function euCastle(x,y){shadow(x,y,36);ctx.fillStyle='#b7a48c';ctx.fillRect(x-30,y-30,60,34);
+  for(let i=-3;i<=3;i++)ctx.fillRect(x+i*9-3,y-36,6,6);
+  ctx.fillRect(x-40,y-40,14,44);ctx.fillRect(x+26,y-40,14,44);
+  ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.moveTo(x-41,y-40);ctx.lineTo(x-33,y-52);ctx.lineTo(x-25,y-40);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+25,y-40);ctx.lineTo(x+33,y-52);ctx.lineTo(x+41,y-40);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#5b3a1e';ctx.fillRect(x-7,y-14,14,18);
+  ctx.strokeStyle='#8a5a2b';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-33,y-52);ctx.lineTo(x-33,y-60);ctx.stroke();ctx.fillStyle='#DC143C';ctx.fillRect(x-33,y-60,10,6);}
+function drawEuropeMini(){
+  mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#1b6fa8';mm.fillRect(0,0,mmC.width,mmC.height);
+  const kx=mmC.width/EUR.w,ky=mmC.height/EUR.h;
+  for(const b of BRIDGES){mm.fillStyle='#5f8f4a';mm.beginPath();mm.ellipse(b.cx*kx,b.cy*ky,b.rx*kx,b.ry*ky,0,0,Math.PI*2);mm.fill();}
+  for(const c of COUNTRIES){mm.fillStyle=st.euSeen[c.id]?'#9be070':'#5f8f4a';mm.beginPath();mm.ellipse(c.cx*kx,c.cy*ky,c.rx*kx,c.ry*ky,0,0,Math.PI*2);mm.fill();}
+  mm.fillStyle='#e5443b';mm.fillRect(player.x*kx-2,player.y*ky-2,4,4);
+}
+// =============================================================================
+
 // ---------- input ----------
 window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;if(!st.running&&!st.over&&!$('start').hidden&&e.code==='Enter')startGame();});
 window.addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -770,6 +962,10 @@ function tapWorld(clientX,clientY){
   const rect=cvs.getBoundingClientRect();
   const wx=cam.x+(clientX-rect.left)/zoom,wy=cam.y+(clientY-rect.top)/zoom;
   if(st.scene==='sea'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
+  if(st.scene==='europe'){
+    for(const c of COUNTRIES){if(Math.hypot(c.cx-wx,c.cy-wy)<50){toast(c.fact,3.2);sfx('eat');player.mtx=player.mty=null;return;}}
+    player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;
+  }
   // fallen items first — they sit near the palm base, so they take priority over the tree
   let dp=null,dd=32;for(const d of drops){const dist=Math.hypot(d.x-wx,d.y-wy);if(dist<dd){dd=dist;dp=d;}}
   if(dp){menuCtx={type:'drop',obj:dp};
@@ -799,12 +995,15 @@ cvs.addEventListener('pointercancel',e=>{if(ptr&&e.pointerId===ptr.id)ptr=null;}
 function startGame(){sfx('craft');reset();}
 $('playBtn').addEventListener('click',startGame);
 $('seaBtn').addEventListener('click',startSea);
-$('euBtn').addEventListener('click',()=>{$('euBtn').textContent='🇪🇺 3. Європа — будується! 🚧';});
+$('euBtn').addEventListener('click',startEurope);
 $('winBtn').addEventListener('click',()=>{$('win').hidden=true;$('start').hidden=false;st.over=false;});
 $('deadBtn').addEventListener('click',startGame);
 $('sailBtn').addEventListener('click',startSea);
 $('rebirthBtn').addEventListener('click',()=>{$('france').hidden=true;startGame();});
 $('exploreBtn').addEventListener('click',()=>{$('france').hidden=true;st.running=true;});
+$('toEuropeBtn').addEventListener('click',()=>{$('france').hidden=true;startEurope();});
+$('euRebirthBtn').addEventListener('click',()=>{$('europeWin').hidden=true;startGame();});
+$('euExploreBtn').addEventListener('click',()=>{$('europeWin').hidden=true;st.running=true;});
 
 // ---------- loop ----------
 genWorld();player.x=spawn.x;player.y=spawn.y;focus.x=spawn.x;focus.y=spawn.y;
