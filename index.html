@@ -148,6 +148,8 @@
       <button class="btn" id="playBtn">🏝️ 1. Острів</button>
       <button class="btn" id="seaBtn">⛵ 2. Океан → Франція</button>
       <button class="btn" id="euBtn">🇪🇺 3. Європа</button>
+      <button class="btn" id="asiaBtn">🌏 4. Азія</button>
+      <button class="btn" id="spaceBtn">🚀 5. Космос</button>
     </div>
     <div class="credit">Правила придумав Костя. Пальма дає 6 листків, 1 деревину і 3 кокоси — як він і сказав.</div>
   </div>
@@ -414,12 +416,13 @@ const ASIA_COUNTRIES=[
   {id:'ph',name:'Філіппіни',  cx:2320,cy:1560,rx:120,ry:180,tint:'#7cbb60',fact:'Філіппіни — 7000 островів 🏝️'},
 ];
 const ASIA_BRIDGES=[{cx:1860,cy:1030,rx:95,ry:75},{cx:2150,cy:970,rx:95,ry:75},{cx:1250,cy:1010,rx:80,ry:75},{cx:2170,cy:1500,rx:100,ry:90}]; // Китай↔Корея, Корея↔Японія, Киргизстан↔Китай, Вʼєтнам↔Філіппіни
-ASIA_CFG.parts=[
-  {x:870, y:820, kind:'metal', emoji:'🔩', got:false},
-  {x:1240,y:620, kind:'fuel',  emoji:'⛽', got:false},
-  {x:1520,y:1000,kind:'engine',emoji:'⚙️', got:false},
-  {x:1230,y:1360,kind:'nose',  emoji:'🔺', got:false},
+ASIA_CFG.parts=[               // деталі у 4 найбільших за населенням країнах Азії
+  {x:1560,y:1000,kind:'engine',emoji:'⚙️',got:false,in:'Китай'},
+  {x:1230,y:1360,kind:'nose',  emoji:'🔺',got:false,in:'Індія'},
+  {x:2120,y:1900,kind:'fuel',  emoji:'⛽',got:false,in:'Індонезія'},
+  {x:970, y:1350,kind:'metal', emoji:'🔩',got:false,in:'Пакистан'},
 ];
+ASIA_CFG.rocketPad={x:2360,y:1075}; // ракета біля Японії
 let COUNTRIES=EUROPE_COUNTRIES;   // активний список країн
 let BRIDGES=EUROPE_BRIDGES;       // активні містки
 let freeCam=false;const focus={x:0,y:0};
@@ -1059,6 +1062,7 @@ function drawEurope(now){
   const ents=[],iv=(x,y)=>x>cam.x-140&&x<cam.x+vwz+140&&y>cam.y-170&&y<cam.y+vhz+140;
   for(const c of COUNTRIES)if(iv(c.cx,c.cy))ents.push({y:c.cy,f:()=>drawLandmark(c,tsec)});
   if(EUR.parts)for(const p of EUR.parts)if(!p.got&&iv(p.x,p.y))ents.push({y:p.y,f:()=>drawPart(p,tsec)});
+  if(EUR.rocketPad&&iv(EUR.rocketPad.x,EUR.rocketPad.y))ents.push({y:EUR.rocketPad.y,f:()=>drawRocketPad(tsec)});
   if(EUR.portal&&iv(EUR.portal.x,EUR.portal.y))ents.push({y:EUR.portal.y,f:()=>drawPortal(tsec)});
   if(iv(EUR.ship.x,EUR.ship.y))ents.push({y:EUR.ship.y,f:()=>drawShipEU()});
   ents.push({y:player.y,f:()=>drawPlayer(tsec)});
@@ -1296,6 +1300,16 @@ function drawPortal(tsec){const x=EUR.portal.x,y=EUR.portal.y;
   for(let i=3;i>=0;i--){const r=10+i*7,hue=(tsec*60+i*40)%360;ctx.fillStyle=`hsl(${hue},70%,55%)`;ctx.beginPath();ctx.ellipse(x,y-14,r*0.8,r,0,0,Math.PI*2);ctx.fill();}
   ctx.fillStyle='#0a0a1a';ctx.beginPath();ctx.ellipse(x,y-14,6,9,0,0,Math.PI*2);ctx.fill();
   ctx.font='700 13px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#0f1c2a';ctx.fillText('→ АЗІЯ 🌏',x+1,y-39);ctx.fillStyle='#fff';ctx.fillText('→ АЗІЯ 🌏',x,y-40);}
+function drawRocketPad(tsec){const x=EUR.rocketPad.x,y=EUR.rocketPad.y;
+  ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(x,y+5,24,7,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#555';ctx.fillRect(x-22,y-2,44,7);ctx.fillStyle='#777';ctx.fillRect(x-22,y-2,44,2);
+  ctx.fillStyle='#e8edf2';ctx.beginPath();ctx.moveTo(x,y-54);ctx.quadraticCurveTo(x-10,y-30,x-10,y-4);ctx.lineTo(x+10,y-4);ctx.quadraticCurveTo(x+10,y-30,x,y-54);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#d42b2b';ctx.beginPath();ctx.moveTo(x,y-54);ctx.lineTo(x-5,y-42);ctx.lineTo(x+5,y-42);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#3a86c8';ctx.beginPath();ctx.arc(x,y-26,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#d42b2b';ctx.beginPath();ctx.moveTo(x-10,y-10);ctx.lineTo(x-16,y-2);ctx.lineTo(x-10,y-4);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(x+10,y-10);ctx.lineTo(x+16,y-2);ctx.lineTo(x+10,y-4);ctx.closePath();ctx.fill();
+  const ok=st.parts>=EUR.parts.length&&st.euVisited>=COUNTRIES.length,g=(Math.sin(tsec*4)+1)/2;
+  ctx.font='700 12px Rubik, sans-serif';ctx.textAlign='center';
+  if(ok){ctx.fillStyle=`rgba(126,217,87,${.6+g*.4})`;ctx.fillText('🚀 ЗАПУСК!',x,y-60);}else{ctx.fillStyle='#0f1c2a';ctx.fillText('🚀 Ракета',x+1,y-59);ctx.fillStyle='#fff';ctx.fillText('🚀 Ракета',x,y-60);}}
 function drawEuropeMini(){
   mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#1b6fa8';mm.fillRect(0,0,mmC.width,mmC.height);
   const kx=mmC.width/EUR.w,ky=mmC.height/EUR.h;
@@ -1412,6 +1426,7 @@ function tapWorld(clientX,clientY){
   const wx=cam.x+(clientX-rect.left)/zoom,wy=cam.y+(clientY-rect.top)/zoom;
   if(st.scene==='sea'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
   if(st.scene==='europe'){
+    if(EUR.rocketPad&&Math.hypot(EUR.rocketPad.x-wx,EUR.rocketPad.y-wy)<48){if(st.parts>=EUR.parts.length&&st.euVisited>=COUNTRIES.length){openRocket();return;}toast(st.euVisited<COUNTRIES.length?('Спершу знайди ВСІ країни Азії! '+st.euVisited+'/'+COUNTRIES.length+' 🌏'):('Ще деталі ракети 🔧 '+st.parts+'/'+EUR.parts.length),3.2);player.mtx=player.mty=null;return;}
     if(EUR.portal&&Math.hypot(EUR.portal.x-wx,EUR.portal.y-wy)<52){startAsia();return;}
     if(Math.hypot(EUR.ship.x-wx,EUR.ship.y-wy)<50){if(EUR.id==='asia')startEurope();else goToStart();return;}
     for(const c of COUNTRIES){if(Math.abs(wx-c.cx)<48&&wy<c.cy+24&&wy>c.cy-100){
@@ -1453,6 +1468,8 @@ function startGame(){sfx('craft');reset();}
 $('playBtn').addEventListener('click',startGame);
 $('seaBtn').addEventListener('click',startSea);
 $('euBtn').addEventListener('click',startEurope);
+$('asiaBtn').addEventListener('click',startAsia);
+$('spaceBtn').addEventListener('click',startSpace);
 $('winBtn').addEventListener('click',()=>{$('win').hidden=true;$('start').hidden=false;st.over=false;});
 $('deadBtn').addEventListener('click',startGame);
 $('sailBtn').addEventListener('click',startSea);
