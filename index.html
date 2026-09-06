@@ -156,6 +156,7 @@
       <button class="btn" id="asiaBtn">🌏 4. Азія</button>
       <button class="btn" id="spaceBtn">🚀 5. Космос</button>
       <button class="btn" id="saBtn">🌎 6. Пд. Америка</button>
+      <button class="btn" id="naBtn">🌎 7. Півн. Америка</button>
     </div>
     <div class="credit">Правила придумав Костя. Пальма дає 6 листків, 1 деревину і 3 кокоси — як він і сказав.</div>
   </div>
@@ -256,10 +257,10 @@
 
 <div id="saWin" class="overlay" hidden>
   <div class="panel" style="text-align:center">
-    <div class="eyebrow">Південну Америку пройдено 🎉🌎</div>
+    <div class="eyebrow" id="saWinEyebrow">Континент пройдено 🎉</div>
     <h2>Усі завдання виконано!</h2>
-    <p>Час: <b id="saTime">0:00</b>. Ти виконав завдання всіх країн Південної Америки 🌎🏆</p>
-    <div class="letter"><p><b>Костя,</b> ти пройшов усю Південну Америку! 🎉 Хочеш ще щось — розкажи голосом.</p></div>
+    <p>Час: <b id="saTime">0:00</b>. <span id="saWinP">Ти виконав завдання всіх країн!</span> 🏆</p>
+    <div class="letter"><p><b>Костя,</b> ти молодець! 🎉 Хочеш ще щось — розкажи голосом.</p></div>
     <div class="row" style="justify-content:center"><button class="btn" id="saRebirthBtn">Переродження 🔄 (спочатку)</button></div>
   </div>
 </div>
@@ -272,6 +273,22 @@
       <button class="btn" id="qYes">Так</button>
       <button class="btn" id="qNo" style="background:var(--panel-2);color:var(--cream);box-shadow:0 4px 0 var(--ink)">Ні</button>
     </div>
+  </div>
+</div>
+
+<div id="assemble" class="overlay" hidden>
+  <div class="panel" style="text-align:center">
+    <h2 id="asmTitle" style="font-size:clamp(13px,3.4vw,20px)">Збери</h2>
+    <div id="asmItems" class="row" style="justify-content:center;gap:8px"></div>
+    <p id="asmNote" style="margin-top:14px;color:var(--sand)"></p>
+  </div>
+</div>
+
+<div id="quiz" class="overlay" hidden>
+  <div class="panel" style="text-align:center">
+    <div class="eyebrow" id="quizTitle">Переклади</div>
+    <h2 id="quizQ" style="font-size:clamp(14px,3.6vw,22px)">?</h2>
+    <div id="quizOpts" class="row" style="justify-content:center;gap:8px"></div>
   </div>
 </div>
 
@@ -443,15 +460,16 @@ const ASIA_COUNTRIES=[
   {id:'ph',name:'Філіппіни',  cx:2320,cy:1560,rx:120,ry:180,tint:'#7cbb60',fact:'Філіппіни — 7000 островів 🏝️'},
 ];
 const ASIA_BRIDGES=[{cx:1860,cy:1030,rx:95,ry:75},{cx:2150,cy:970,rx:95,ry:75},{cx:1250,cy:1010,rx:80,ry:75},{cx:2170,cy:1500,rx:100,ry:90}]; // Китай↔Корея, Корея↔Японія, Киргизстан↔Китай, Вʼєтнам↔Філіппіни
-ASIA_CFG.parts=[               // деталі у 4 найбільших за населенням країнах Азії
-  {x:1560,y:1000,kind:'engine',emoji:'⚙️',got:false,in:'Китай'},
-  {x:1230,y:1360,kind:'nose',  emoji:'🔺',got:false,in:'Індія'},
-  {x:2120,y:1900,kind:'fuel',  emoji:'⛽',got:false,in:'Індонезія'},
-  {x:970, y:1350,kind:'metal', emoji:'🔩',got:false,in:'Пакистан'},
+ASIA_CFG.parts=[               // деталі розкидані в ГОРАХ (сцена mountains, тапнути Фудзі в Японії)
+  {x:300, y:560,kind:'engine',emoji:'⚙️',got:false},
+  {x:640, y:380,kind:'fuel',  emoji:'⛽',got:false},
+  {x:980, y:560,kind:'nose',  emoji:'🔺',got:false},
+  {x:1260,y:440,kind:'metal', emoji:'🔩',got:false},
 ];
 ASIA_CFG.rocketPad={x:2360,y:1075}; // ракета біля Японії
 // ---- Південна Америка (частина 6) ----
-const SA_CFG={w:2000,h:2800,startX:1150,startY:640,ship:{x:1150,y:180},id:'sa'};
+const SA_CFG={w:2000,h:2800,startX:1150,startY:640,ship:{x:1150,y:180},id:'sa',tasks:true,dispName:'Південна Америка'};
+const NA_CFG={w:2700,h:2500,startX:1200,startY:1450,ship:{x:1200,y:2400},id:'na',tasks:true,dispName:'Північна Америка'};
 const SA_COUNTRIES=[
   {id:'br',name:'Бразилія', cx:1150,cy:820, rx:430,ry:470,tint:'#6fb257',fact:'Бразилія — Амазонка, карнавал і футбол ⚽. Тут — меч і 15 змій! 🐍',snakes:true},
   {id:'ve',name:'Венесуела',cx:820, cy:360, rx:200,ry:180,tint:'#7ab85f',fact:'Венесуела — найвищий водоспад Анхель 💧',q:'Ти б стрибнув з найвищого водоспаду світу на парашуті?'},
@@ -467,10 +485,20 @@ const SA_COUNTRIES=[
 const SA_BRIDGES=[{cx:690,cy:760,rx:70,ry:70},{cx:1120,cy:1560,rx:80,ry:80}];
 SA_CFG.sword={x:1150,y:1050,taken:false};
 SA_CFG.snakes=[];for(let i=0;i<15;i++){const a=i/15*Math.PI*2,r=120+((i*53)%220);SA_CFG.snakes.push({x:1150+Math.cos(a)*r,y:860+Math.sin(a)*r*0.9,base:860+Math.sin(a)*r*0.9,dir:i%2?1:-1,phase:i,dead:false});}
+// ---- Північна Америка (частина 7) ----
+const NA_COUNTRIES=[
+  {id:'gl',name:'Ґренландія',cx:2250,cy:470, rx:280,ry:330,tint:'#7ab85f',fact:'Ґренландія — крижаний острів 🧊',q:'Ти б покатався на собачій упряжці по снігу? 🛷'},
+  {id:'ca',name:'Канада',   cx:1150,cy:600, rx:620,ry:430,tint:'#6fb257',fact:'Канада — клени 🍁, ведмеді і хокей',plane:true},
+  {id:'us',name:'США',      cx:1200,cy:1400,rx:560,ry:420,tint:'#7cbb60',fact:'США — статуя Свободи 🗽 і хмарочоси',translate:true},
+  {id:'mx',name:'Мексика',  cx:950, cy:2050,rx:300,ry:300,tint:'#8cbf5e',fact:'Мексика — піраміди і буріто 🌯',cook:true},
+  {id:'gt',name:'Гватемала',cx:1080,cy:2380,rx:130,ry:120,tint:'#7ab85f',fact:'Гватемала — древні храми майя 🗿',q:'Ти б піднявся на вершину піраміди майя?'},
+  {id:'cu',name:'Куба',     cx:1650,cy:2120,rx:170,ry:78, tint:'#7cbb60',fact:'Куба — острів, музика 🎵 і пальми',q:'Танцювати весело? 💃'},
+];
+const NA_BRIDGES=[{cx:1880,cy:520,rx:135,ry:120},{cx:1400,cy:2085,rx:155,ry:110}]; // Канада↔Ґренландія, Мексика↔Куба
 let COUNTRIES=EUROPE_COUNTRIES;   // активний список країн
 let BRIDGES=EUROPE_BRIDGES;       // активні містки
 let freeCam=false;const focus={x:0,y:0};
-function clampFocus(){if(st.scene==='sea'){focus.x=clamp(focus.x,-120,SEA.w+120);focus.y=clamp(focus.y,SEA.shoreY-200,SEA.startY+200);return;}if(st.scene==='europe'){focus.x=clamp(focus.x,-120,EUR.w+120);focus.y=clamp(focus.y,-120,EUR.h+120);return;}if(st.scene==='inside'){focus.x=clamp(focus.x,-80,IN.w+80);focus.y=clamp(focus.y,-80,IN.h+80);return;}if(st.scene==='space'){focus.x=clamp(focus.x,-80,SPACE.w+80);focus.y=clamp(focus.y,-80,SPACE.h+80);return;}const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
+function clampFocus(){if(st.scene==='sea'){focus.x=clamp(focus.x,-120,SEA.w+120);focus.y=clamp(focus.y,SEA.shoreY-200,SEA.startY+200);return;}if(st.scene==='europe'){focus.x=clamp(focus.x,-120,EUR.w+120);focus.y=clamp(focus.y,-120,EUR.h+120);return;}if(st.scene==='inside'){focus.x=clamp(focus.x,-80,IN.w+80);focus.y=clamp(focus.y,-80,IN.h+80);return;}if(st.scene==='space'){focus.x=clamp(focus.x,-80,SPACE.w+80);focus.y=clamp(focus.y,-80,SPACE.h+80);return;}if(st.scene==='mountains'){focus.x=clamp(focus.x,-80,MTN.w+80);focus.y=clamp(focus.y,-80,MTN.h+80);return;}const m=T*6;focus.x=clamp(focus.x,-m,W*T+m);focus.y=clamp(focus.y,-m,H*T+m);}
 const dressed=()=>st.cloth>=NEED_CLOTH;
 
 const QUESTS=[
@@ -517,13 +545,13 @@ function updateUI(){
   }
   if(st.scene==='europe'){
     const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
-    const asia=EUR.id==='asia',sa=EUR.id==='sa';
+    const asia=EUR.id==='asia',sa=EUR.tasks;
     const q=sa?saQuestInfo():null;
-    const qk=sa?('sa'+q.done+'|'+st.snakesKilled):asia?('as'+st.parts+'|'+st.euVisited):('eu'+st.euVisited);
+    const qk=sa?('sa'+q.done+'|'+(EUR.snakes?st.snakesKilled:0)):asia?('as'+st.parts+'|'+st.euVisited):('eu'+st.euVisited);
     if(ui.quest!==qk){ui.quest=qk;
       stepsEl.innerHTML='<div class="step cur"><span class="k">'+(sa?'📋':asia?'🚀':'🗺️')+'</span><span>'+(sa?'Виконай завдання всіх країн':asia?'Знайди всі країни, тоді Японія 🍣':'Обійди всю Європу')+'</span></div>';
-      questHint.innerHTML=sa?`Завдання: <b>${q.done}/${q.total}</b> ✅ · змії ${st.snakesKilled}/${EUR.snakes.length} 🐍`:asia?`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🌏 · деталі ${st.parts}/${EUR.parts.length} 🔧`:`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
-    let h=st.toastT>0?st.toastMsg:(sa?(st.hasSword?'Тапай країни й виконуй завдання (Бразилія 🐍, Аргентина ⚽, питання...)':'Знайди меч ⚔️ у Бразилії, тоді завдання країн'):asia?'Знайди всі країни Азії і збери деталі 🔧':'Гуляй Європою! Тапни країну — дізнаєшся про неї');
+      questHint.innerHTML=sa?(`Завдання: <b>${q.done}/${q.total}</b> ✅`+(EUR.snakes?` · змії ${st.snakesKilled}/${EUR.snakes.length} 🐍`:'')):asia?`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🌏 · деталі ${st.parts}/4 🔧`:`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
+    let h=st.toastT>0?st.toastMsg:(sa?((EUR.snakes&&!st.hasSword)?'Знайди меч ⚔️ у Бразилії, тоді завдання країн':'Тапай країни й виконуй їхні завдання ✅'):asia?'Знайди всі країни Азії; у Японії тапни гори 🏔️ по деталі':'Гуляй Європою! Тапни країну — дізнаєшся про неї');
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -548,6 +576,14 @@ function updateUI(){
     const qk='m'+st.matchYou+'|'+st.matchEng;
     if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">🧤</span><span>Воротар: відбий Англію</span></div>';questHint.innerHTML=`Сейви: <b>${st.matchYou}/3</b> 🧤 · пропущено ${st.matchEng}/3`;}
     let h=st.toastT>0?st.toastMsg:'Стій у своїх воротах 🥅 і лови мʼяч у кутках!';
+    if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
+    return;
+  }
+  if(st.scene==='mountains'){
+    const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
+    const qk='mtn'+st.parts;
+    if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">🏔️</span><span>Знайди деталі ракети в горах</span></div>';questHint.innerHTML=`Деталі: <b>${st.parts}/4</b> 🔧`;}
+    let h=st.toastT>0?st.toastMsg:'Ходи по горах ⛰️ і збирай деталі 🔧';
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -641,6 +677,7 @@ function update(dt){
   if(st.scene==='inside'){updateInside(dt);return;}
   if(st.scene==='space'){updateSpace(dt);return;}
   if(st.scene==='match'){updateMatch(dt);return;}
+  if(st.scene==='mountains'){updateMountains(dt);return;}
   // movement
   let dx=0,dy=0;
   const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
@@ -700,6 +737,7 @@ function drawWorld(now){
   if(st.scene==='inside'){drawInside(now);return;}
   if(st.scene==='space'){drawSpace(now);return;}
   if(st.scene==='match'){drawMatch(now);return;}
+  if(st.scene==='mountains'){drawMountains(now);return;}
   const vwz=vw/zoom,vhz=vh/zoom;
   if(!freeCam){focus.x=player.x;focus.y=player.y;}
   cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
@@ -776,6 +814,7 @@ function drawMinimap(){
   if(st.scene==='inside'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#17283a';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#f5ecd6';mm.font='700 12px Rubik, sans-serif';mm.textAlign='center';mm.fillText('🚪 Усередині',mmC.width/2,mmC.height/2+4);return;}
   if(st.scene==='space'){drawSpaceMini();return;}
   if(st.scene==='match'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#0d2a12';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#fff';mm.font='700 12px Rubik, sans-serif';mm.textAlign='center';mm.fillText('🧤 '+st.matchYou+'/3',mmC.width/2,mmC.height/2+4);return;}
+  if(st.scene==='mountains'){mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#7d879a';mm.fillRect(0,0,mmC.width,mmC.height);mm.fillStyle='#fff';mm.font='700 11px Rubik, sans-serif';mm.textAlign='center';mm.fillText('🏔️ '+st.parts+'/4',mmC.width/2,mmC.height/2+4);return;}
   const img=mmo.createImageData(W,H),d=img.data;
   for(let i=0;i<W*H;i++){let c;if(!seen[i])c=[15,28,42];else{const t=tiles[i];c=t===DEEP?[27,111,168]:t===SHALLOW?[58,166,216]:t===SAND?[232,213,154]:[111,191,74];}d[i*4]=c[0];d[i*4+1]=c[1];d[i*4+2]=c[2];d[i*4+3]=255;}
   mmo.putImageData(img,0,0);mm.imageSmoothingEnabled=false;mm.clearRect(0,0,mmC.width,mmC.height);mm.drawImage(mmOff,0,0,mmC.width,mmC.height);
@@ -792,7 +831,7 @@ function layoutHud(){const isl=st.scene==='island';
   $('food').hidden=!isl;$('thirst').hidden=!isl;$('inv').hidden=!isl;
   const lb=$('listBtn');if(lb)lb.hidden=!(st.scene==='europe'||st.scene==='space');
   const ab=$('airportBtn');if(ab)ab.hidden=false;
-  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?(EUR.id==='asia'?'Азія 🌏':EUR.id==='sa'?'Пд.Америка 🌎':'Європа 🗺️'):st.scene==='inside'?'Усередині 🚪':st.scene==='space'?'Космос 🚀':st.scene==='match'?'⚽ Матч':'Мапа острова';}
+  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?(EUR.id==='asia'?'Азія 🌏':EUR.id==='sa'?'Пд.Америка 🌎':'Європа 🗺️'):st.scene==='inside'?'Усередині 🚪':st.scene==='space'?'Космос 🚀':st.scene==='match'?'⚽ Матч':st.scene==='mountains'?'🏔️ Гори':'Мапа острова';}
 function startSea(){
   st.scene='sea';st.running=true;st.over=false;st.won=true;st.seaWon=false;st.seaProg=0;st.seaInv=1.2;st.time=0;st.toastT=0;
   player.x=SEA.startX;player.y=SEA.startY;player.dir='up';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
@@ -982,7 +1021,8 @@ function canStandEU(x,y){return europeLand(x-7,y+4)&&europeLand(x+7,y+4)&&europe
 function countryAt(x,y){let best=null,bd=Infinity;for(const c of COUNTRIES){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry,d=dx*dx+dy*dy;if(d<=1&&d<bd){bd=d;best=c;}}return best;}
 const EMOJI={fr:'🗼',it:'🍕',es:'🐂',de:'🥨',uk:'🕰️',nl:'🌷',gr:'🏛️',ua:'🌻',pl:'🏰',dk:'🧱',no:'⛵',se:'🐴',fi:'❄️',ee:'🏰',lv:'🌲',lt:'🏯',by:'🕊️',ro:'🦇',md:'🍇',bg:'🌹',tr:'🕌',pt:'🐓',lo:'🐻',be:'🧇',lu:'🏰',ru:'🌲',kz:'⛺',mn:'🐎',cn:'🐼',in:'🐘',kr:'🍜',jp:'🍣',
   uz:'🕌',tm:'🔥',tj:'⛰️',kg:'⛺',pk:'🕌',np:'🏔️',bd:'🐯',lk:'🐘',mm:'✨',th:'🐘',la:'🛕',kh:'🛕',vn:'🌾',my:'🌴',sg:'🦁',id:'🌋',ph:'🏝️',
-  br:'⚽',ve:'💧',co:'☕',ec:'🌍',pe:'🦙',bo:'✨',py:'🌳',ch:'⛰️',uy:'🏖️',ar:'💃'};
+  br:'⚽',ve:'💧',co:'☕',ec:'🌍',pe:'🦙',bo:'✨',py:'🌳',ch:'⛰️',uy:'🏖️',ar:'💃',
+  gl:'🧊',ca:'🍁',us:'🗽',mx:'🌯',gt:'🗿',cu:'🎵'};
 const IN={w:760,h:560,wall:26,doorW:100};
 function openInside(c){st.insideCountry=c;st.euReturn={x:player.x,y:player.y};st.scene='inside';
   player.x=IN.w/2;player.y=IN.h-IN.wall-28;player.dir='up';player.moving=false;player.mtx=player.mty=null;
@@ -990,6 +1030,22 @@ function openInside(c){st.insideCountry=c;st.euReturn={x:player.x,y:player.y};st
   toast('Ти всередині! Роздивись і вийди через двері 🚪',3);}
 function openQuestion(c){st.qCountry=c;st.running=false;$('questionCountry').textContent=c.name+' '+(EMOJI[c.id]||'🏳️');$('questionText').textContent=c.q;$('question').hidden=false;sfx('eat');}
 function answerQuestion(yes){$('question').hidden=true;st.running=true;const c=st.qCountry;const first=c&&!st.saDone[c.id];if(c){st.saDone[c.id]=true;checkSaWin();}toast(first?'Гарна відповідь! ✅ Завдання виконано':'Гарна відповідь! 🙂',2.6);}
+let asmState=null;
+function openAssemble(c,title,items,doneMsg){st.running=false;asmState={c,got:new Set(),total:items.length,doneMsg};
+  $('asmTitle').textContent=title;$('asmNote').textContent='Тапни всі '+items.length;
+  $('asmItems').innerHTML=items.map(it=>`<button class="btn" data-id="${it.id}">${it.label}</button>`).join('');
+  $('asmItems').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>asmTap(b)));
+  $('assemble').hidden=false;}
+function asmTap(b){if(!asmState)return;const id=b.dataset.id;if(asmState.got.has(id))return;asmState.got.add(id);b.textContent='✅ '+b.textContent;b.disabled=true;sfx('craft');
+  $('asmNote').textContent='Додано '+asmState.got.size+'/'+asmState.total;
+  if(asmState.got.size>=asmState.total){const c=asmState.c,msg=asmState.doneMsg;asmState=null;$('assemble').hidden=true;st.running=true;if(c&&!st.saDone[c.id]){st.saDone[c.id]=true;checkSaWin();}toast(msg,3.4);}}
+function openCook(c){openAssemble(c,'🌯 Приготуй буріто!',[{id:'t',label:'🫓 Тортилья'},{id:'b',label:'🫘 Квасоля'},{id:'m',label:'🧀 Сир'},{id:'s',label:'🌶️ Сальса'}],'Буріто готове! 🌯 Завдання ✅');}
+function openPlane(c){openAssemble(c,'✈️ Побудуй літак в Антарктиду!',[{id:'w',label:'🛩️ Крила'},{id:'e',label:'⚙️ Двигун'},{id:'x',label:'🪽 Хвіст'},{id:'p',label:'🔩 Пропелер'}],'Літак готовий! ✈️ Летимо в Антарктиду! Завдання ✅');}
+const TRANSLATE=[{en:'Cat 🐱',opts:['Chat','Chien','Oiseau'],a:0},{en:'Dog 🐶',opts:['Chat','Chien','Poisson'],a:1},{en:'Sun ☀️',opts:['Lune','Soleil','Étoile'],a:1},{en:'Water 💧',opts:['Eau','Feu','Air'],a:0},{en:'House 🏠',opts:['Maison','Voiture','Arbre'],a:0}];
+let quizState=null;
+function openTranslate(c){st.running=false;quizState={c,i:0,rounds:TRANSLATE.slice(0,3)};$('quizTitle').textContent='🇬🇧 → 🇫🇷 Переклади слово';showQuizRound();$('quiz').hidden=false;}
+function showQuizRound(){const r=quizState.rounds[quizState.i];$('quizQ').textContent=r.en+' → ?';$('quizOpts').innerHTML=r.opts.map((o,i)=>`<button class="btn" data-i="${i}">${o}</button>`).join('');$('quizOpts').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>quizAnswer(+b.dataset.i)));}
+function quizAnswer(i){const r=quizState.rounds[quizState.i];if(i===r.a){sfx('craft');quizState.i++;if(quizState.i>=quizState.rounds.length){const c=quizState.c;quizState=null;$('quiz').hidden=true;st.running=true;if(c&&!st.saDone[c.id]){st.saDone[c.id]=true;checkSaWin();}toast('Молодець! Переклад готовий 🇫🇷 Завдання ✅',3.4);}else showQuizRound();}else{sfx('nope');toast('Не те слово 🙈 спробуй ще',1.8);}}
 function exitInside(){st.scene='europe';const r=st.euReturn||{x:EUR.startX,y:EUR.startY};
   player.x=r.x;player.y=r.y+6;player.mtx=player.mty=null;player.dir='down';player.moving=false;
   freeCam=false;focus.x=player.x;focus.y=player.y;ui.quest='';ui.hint='';ui.time=-1;layoutHud();sfx('craft');}
@@ -1093,10 +1149,19 @@ function startSA(){
   $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('menu').hidden=true;const rk=$('rocket');if(rk)rk.hidden=true;
   toast('Ти у Бразилії! 🇧🇷 Візьми меч ⚔️ і переможи 15 змій 🐍',4.2);
 }
+function startNA(){
+  EUR=NA_CFG;COUNTRIES=NA_COUNTRIES;BRIDGES=NA_BRIDGES;
+  st.scene='europe';st.running=true;st.over=false;st.won=true;st.cloth=NEED_CLOTH;st.time=0;st.toastT=0;st.euWon=false;st.euSeen={};st.saWon=false;st.saDone={};
+  player.x=EUR.startX;player.y=EUR.startY;player.dir='down';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
+  freeCam=false;focus.x=player.x;focus.y=player.y;floats.length=0;
+  ui.quest='';ui.hint='';ui.time=-1;layoutHud();
+  $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('saWin').hidden=true;$('menu').hidden=true;const rk=$('rocket');if(rk)rk.hidden=true;
+  toast('Ти у Північній Америці, у США! 🇺🇸 Виконай завдання всіх країн (буріто, переклад, літак)',4.4);
+}
 function europeWin(){if(st.euWon)return;st.euWon=true;sfx('win');$('euTime').textContent=fmtTime(st.time);setTimeout(()=>{if(st.scene==='europe'&&st.euWon){st.running=false;$('europeWin').hidden=false;}},1300);}
-function saWin(){if(st.saWon)return;st.saWon=true;sfx('win');$('saTime').textContent=fmtTime(st.time);setTimeout(()=>{if(st.scene==='europe'&&st.saWon){st.running=false;$('saWin').hidden=false;}},1200);}
-function saQuestInfo(){const qs=COUNTRIES.filter(c=>c.match||c.q||c.snakes);let done=0;for(const c of qs)if(st.saDone[c.id])done++;return{done,total:qs.length};}
-function checkSaWin(){if(EUR.id!=='sa'||st.saWon)return;const q=saQuestInfo();if(q.total>0&&q.done>=q.total)saWin();}
+function saWin(){if(st.saWon)return;st.saWon=true;sfx('win');const nm=EUR.dispName||'континент';$('saWinEyebrow').textContent=nm+' пройдено 🎉';$('saWinP').textContent='Ти виконав завдання всіх країн: '+nm+'!';$('saTime').textContent=fmtTime(st.time);setTimeout(()=>{if(st.scene==='europe'&&st.saWon){st.running=false;$('saWin').hidden=false;}},1200);}
+function saQuestInfo(){const qs=COUNTRIES.filter(c=>c.match||c.q||c.snakes||c.cook||c.translate||c.plane);let done=0;for(const c of qs)if(st.saDone[c.id])done++;return{done,total:qs.length};}
+function checkSaWin(){if(!EUR.tasks||st.saWon)return;const q=saQuestInfo();if(q.total>0&&q.done>=q.total)saWin();}
 function updateEurope(dt){
   let dx=0,dy=0;
   const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
@@ -1114,8 +1179,6 @@ function updateEurope(dt){
   const c=countryAt(player.x,player.y);
   if(c&&!st.euSeen[c.id]){st.euSeen[c.id]=true;st.euVisited++;sfx('craft');toast('Нова країна: '+c.name+'! 🏳️',2.4);floats.push({x:player.x,y:player.y-46,s:'✓ '+c.name,t:0});
     if(EUR.id==='europe'&&st.euVisited>=COUNTRIES.length)europeWin();}
-  if(EUR.parts)for(const p of EUR.parts){if(!p.got&&Math.hypot(player.x-p.x,player.y-p.y)<36){p.got=true;st.parts++;sfx('eat');floats.push({x:p.x,y:p.y-28,s:'+'+p.emoji+' деталь',t:0});
-    if(st.parts>=EUR.parts.length)toast('Усі деталі є! 🚀 Іди в Японію 🍣 і збудуй ракету',3.4);}}
   if(EUR.sword){
     if(!EUR.sword.taken&&Math.hypot(player.x-EUR.sword.x,player.y-EUR.sword.y)<30){EUR.sword.taken=true;st.hasSword=true;sfx('craft');toast('Меч у тебе! ⚔️ Тепер бий змій 🐍 (підійди до них)',3.4);floats.push({x:player.x,y:player.y-44,s:'⚔️ Меч!',t:0});}
     for(const s of EUR.snakes){if(s.dead)continue;
@@ -1145,7 +1208,6 @@ function drawEurope(now){
   if(marker.t<0.6){const a=1-marker.t/0.6,rr=8+marker.t*30;ctx.strokeStyle=`rgba(245,236,214,${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,rr,0,Math.PI*2);ctx.stroke();}
   const ents=[],iv=(x,y)=>x>cam.x-140&&x<cam.x+vwz+140&&y>cam.y-170&&y<cam.y+vhz+140;
   for(const c of COUNTRIES)if(iv(c.cx,c.cy))ents.push({y:c.cy,f:()=>drawLandmark(c,tsec)});
-  if(EUR.parts)for(const p of EUR.parts)if(!p.got&&iv(p.x,p.y))ents.push({y:p.y,f:()=>drawPart(p,tsec)});
   if(EUR.rocketPad&&iv(EUR.rocketPad.x,EUR.rocketPad.y))ents.push({y:EUR.rocketPad.y,f:()=>drawRocketPad(tsec)});
   if(EUR.sword&&!EUR.sword.taken&&iv(EUR.sword.x,EUR.sword.y))ents.push({y:EUR.sword.y,f:()=>drawSword(tsec)});
   if(EUR.snakes)for(const s of EUR.snakes)if(!s.dead&&iv(s.x,s.y))ents.push({y:s.y,f:()=>drawSnake(s,tsec)});
@@ -1223,6 +1285,12 @@ function drawFlag(x,y,id){const w=30,h=20,lx=x-w/2;
     case 'ch':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#d52b1e';ctx.fillRect(lx,y+h/2,w,h/2);ctx.fillStyle='#0039a6';ctx.fillRect(lx,y,w*0.34,h/2);ctx.fillStyle='#fff';ctx.font='700 8px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+w*0.17,y+h*0.34);break;
     case 'uy':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);for(let i=1;i<9;i+=2){ctx.fillStyle='#0038a8';ctx.fillRect(lx,y+i*(h/9),w,h/9);}ctx.fillStyle='#fff';ctx.fillRect(lx,y,w*0.4,h*0.55);ctx.fillStyle='#fcd116';ctx.beginPath();ctx.arc(lx+w*0.2,y+h*0.28,3,0,Math.PI*2);ctx.fill();break;
     case 'ar':Hb('#75AADB','#fff','#75AADB');ctx.fillStyle='#f6b40e';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,3,0,Math.PI*2);ctx.fill();break;
+    case 'gl':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#D00C33';ctx.fillRect(lx,y+h/2,w,h/2);ctx.beginPath();ctx.arc(lx+w*0.42,y+h/2,6,Math.PI,0);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(lx+w*0.42,y+h/2,6,0,Math.PI);ctx.fill();break;
+    case 'ca':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#d52b1e';ctx.fillRect(lx,y,w*0.25,h);ctx.fillRect(lx+w*0.75,y,w*0.25,h);ctx.font='700 13px Rubik';ctx.textAlign='center';ctx.fillText('🍁',lx+w/2,y+h/2+5);break;
+    case 'us':for(let i=0;i<7;i++){ctx.fillStyle=i%2?'#fff':'#B22234';ctx.fillRect(lx,y+i*(h/7),w,h/7);}ctx.fillStyle='#3C3B6E';ctx.fillRect(lx,y,w*0.42,h*0.54);ctx.fillStyle='#fff';ctx.font='700 7px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+w*0.2,y+h*0.34);break;
+    case 'mx':Vb('#006847','#fff','#CE1126');ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,2.5,0,Math.PI*2);ctx.fill();break;
+    case 'gt':Vb('#4997D0','#fff','#4997D0');ctx.fillStyle='#5a7d3a';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,2.5,0,Math.PI*2);ctx.fill();break;
+    case 'cu':for(let i=0;i<5;i++){ctx.fillStyle=i%2?'#fff':'#002A8F';ctx.fillRect(lx,y+i*(h/5),w,h/5);}ctx.fillStyle='#CF142B';ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx+w*0.44,y+h/2);ctx.lineTo(lx,y+h);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.font='700 8px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+w*0.13,y+h/2+3);break;
     default:ctx.fillStyle='#ccc';ctx.fillRect(lx,y,w,h);
   }
   ctx.strokeStyle='#0f1c2a';ctx.lineWidth=1;ctx.strokeRect(lx,y,w,h);
@@ -1280,6 +1348,12 @@ function drawLandmark(c,tsec){const x=c.cx,y=c.cy;
     case 've':case 'ec':case 'bo':case 'uy':euChurch(x,y,'#c9a24a');break;
     case 'ch':euTower(x,y,'#D52B1E');break;
     case 'ar':euTower(x,y,'#75AADB');break;
+    case 'gl':euPine(x,y,true);break;
+    case 'ca':euPine(x,y);break;
+    case 'us':euStatue(x,y);break;
+    case 'mx':euTemple(x,y);break;
+    case 'gt':euTemple(x,y);break;
+    case 'cu':euHouse(x,y,'#c0392b');break;
   }
 }
 function shadow(x,y,r){ctx.fillStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.ellipse(x,y+4,r,r*0.24,0,0,Math.PI*2);ctx.fill();}
@@ -1577,6 +1651,43 @@ function drawMatch(now){
   ctx.font='700 14px Rubik, sans-serif';ctx.textAlign='center';for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-.8)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0a1020';ctx.fillText(f.s,f.x+1,f.y-f.t*26+1);ctx.fillStyle='#fff';ctx.fillText(f.s,f.x,f.y-f.t*26);}ctx.globalAlpha=1;}
 // =============================================================================
 
+// ================= ГОРИ АЗІЇ: знайти деталі ракети (ідея Кості) =================
+const MTN={w:1500,h:950};
+function startMountains(){st.scene='mountains';st.running=true;st.over=false;st.cloth=NEED_CLOTH;
+  player.x=MTN.w/2;player.y=MTN.h-70;player.dir='up';player.moving=false;player.mtx=player.mty=null;player.anim=0;
+  freeCam=false;focus.x=player.x;focus.y=player.y;floats.length=0;ui.quest='';ui.hint='';ui.time=-1;layoutHud();$('menu').hidden=true;
+  toast('🏔️ Ти в горах! Знайди всі 4 деталі ракети 🔧',3.8);}
+function mtnExit(){st.scene='europe';const jp=ASIA_COUNTRIES.find(c=>c.id==='jp');player.x=jp.cx;player.y=jp.cy+50;player.mtx=player.mty=null;freeCam=false;focus.x=player.x;focus.y=player.y;ui.quest='';ui.hint='';ui.time=-1;layoutHud();}
+function updateMountains(dt){
+  let dx=0,dy=0;
+  const kx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0),ky=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0);
+  if(kx||ky){player.mtx=player.mty=null;dx=kx;dy=ky;}
+  else if(player.mtx!=null){const gx=player.mtx-player.x,gy=player.mty-player.y,gl=Math.hypot(gx,gy);if(gl>4){dx=gx/gl;dy=gy/gl;}else player.mtx=player.mty=null;}
+  const len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}player.moving=len>0.1;
+  if(player.moving){player.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');player.anim+=dt*9;}
+  player.x=clamp(player.x+dx*165*dt,20,MTN.w-20);player.y=clamp(player.y+dy*165*dt,120,MTN.h-20);
+  for(const p of ASIA_CFG.parts){if(!p.got&&Math.hypot(player.x-p.x,player.y-p.y)<34){p.got=true;st.parts++;sfx('eat');floats.push({x:p.x,y:p.y-24,s:'+'+p.emoji+' деталь',t:0});
+    if(st.parts>=ASIA_CFG.parts.length){toast('Усі 4 деталі знайдено! 🚀 Тапни ракету біля Японії',3.8);setTimeout(mtnExit,1000);}}}
+  for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.4)floats.splice(i,1);}}
+function drawMountains(now){
+  const vwz=vw/zoom,vhz=vh/zoom,tsec=now/1000;
+  if(!freeCam){focus.x=player.x;focus.y=player.y;}
+  focus.x=MTN.w<vwz?MTN.w/2:clamp(focus.x,vwz/2-40,MTN.w-vwz/2+40);
+  focus.y=MTN.h<vhz?MTN.h/2:clamp(focus.y,vhz/2-40,MTN.h-vhz/2+40);
+  cam.x=focus.x-vwz/2;cam.y=focus.y-vhz/2;
+  ctx.setTransform(dpr*zoom,0,0,dpr*zoom,-cam.x*dpr*zoom,-cam.y*dpr*zoom);
+  ctx.fillStyle='#bfe3f5';ctx.fillRect(cam.x-40,cam.y-40,vwz+80,vhz+80);
+  const peaks=[[190,720,210],[440,640,270],[720,740,240],[1000,620,280],[1250,700,250],[1400,740,200]];
+  for(const[px,base,h]of peaks){ctx.fillStyle='#8b93a3';ctx.beginPath();ctx.moveTo(px-h*0.8,base);ctx.lineTo(px,base-h);ctx.lineTo(px+h*0.8,base);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#9aa2b0';ctx.beginPath();ctx.moveTo(px,base-h);ctx.lineTo(px+h*0.8,base);ctx.lineTo(px+h*0.2,base);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(px-h*0.26,base-h*0.62);ctx.lineTo(px,base-h);ctx.lineTo(px+h*0.26,base-h*0.62);ctx.lineTo(px+h*0.1,base-h*0.56);ctx.lineTo(px,base-h*0.62);ctx.lineTo(px-h*0.1,base-h*0.56);ctx.closePath();ctx.fill();}
+  ctx.fillStyle='#6f8f5a';ctx.fillRect(cam.x-40,MTN.h-70,vwz+80,200);
+  if(marker.t<0.6){const a=1-marker.t/0.6,rr=8+marker.t*30;ctx.strokeStyle=`rgba(15,28,42,${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,rr,0,Math.PI*2);ctx.stroke();}
+  const ents=[];for(const p of ASIA_CFG.parts)if(!p.got)ents.push({y:p.y,f:()=>drawPart(p,tsec)});
+  ents.push({y:player.y,f:()=>drawPlayer(tsec)});ents.sort((a,b)=>a.y-b.y);for(const e of ents)e.f();
+  ctx.font='700 12px Rubik, sans-serif';ctx.textAlign='center';for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-.8)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0f1c2a';ctx.fillText(f.s,f.x+1,f.y-f.t*26+1);ctx.fillStyle='#fff';ctx.fillText(f.s,f.x,f.y-f.t*26);}ctx.globalAlpha=1;}
+// =============================================================================
+
 // ---------- input ----------
 window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;if(!st.running&&!st.over&&!$('start').hidden&&e.code==='Enter')startGame();});
 window.addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -1611,8 +1722,12 @@ function tapWorld(clientX,clientY){
     if(Math.hypot(EUR.ship.x-wx,EUR.ship.y-wy)<50){if(EUR.id==='asia')startEurope();else goToStart();return;}
     for(const c of COUNTRIES){if(Math.abs(wx-c.cx)<48&&wy<c.cy+24&&wy>c.cy-100){
       if(EUR.id==='asia'&&c.id==='jp'){
-        if(st.parts>=EUR.parts.length&&st.euVisited>=COUNTRIES.length){openRocket();return;}
-        toast(st.euVisited<COUNTRIES.length?('Спершу знайди ВСІ країни Азії! '+st.euVisited+'/'+COUNTRIES.length+' 🌏'):('Збери всі деталі ракети 🔧 '+st.parts+'/'+EUR.parts.length),3.2);player.mtx=player.mty=null;return;}
+        if(st.parts<EUR.parts.length){startMountains();return;}
+        if(st.euVisited>=COUNTRIES.length){openRocket();return;}
+        toast('Деталі є! Тепер знайди всі країни Азії 🌏 '+st.euVisited+'/'+COUNTRIES.length,3);player.mtx=player.mty=null;return;}
+      if(c.cook){openCook(c);player.mtx=player.mty=null;return;}
+      if(c.translate){openTranslate(c);player.mtx=player.mty=null;return;}
+      if(c.plane){openPlane(c);player.mtx=player.mty=null;return;}
       if(c.match){startMatch(c);player.mtx=player.mty=null;return;}
       if(c.q){openQuestion(c);player.mtx=player.mty=null;return;}
       openInside(c);player.mtx=player.mty=null;return;}}
@@ -1621,6 +1736,7 @@ function tapWorld(clientX,clientY){
   if(st.scene==='inside'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
   if(st.scene==='space'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
   if(st.scene==='match'){const t=matchTransform();player.mtx=(clientX-rect.left-t.offx)/t.sc;player.mty=(clientY-rect.top-t.offy)/t.sc;return;}
+  if(st.scene==='mountains'){player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;}
   // fallen items first — they sit near the palm base, so they take priority over the tree
   let dp=null,dd=32;for(const d of drops){const dist=Math.hypot(d.x-wx,d.y-wy);if(dist<dd){dd=dist;dp=d;}}
   if(dp){menuCtx={type:'drop',obj:dp};
@@ -1654,6 +1770,7 @@ $('euBtn').addEventListener('click',startEurope);
 $('asiaBtn').addEventListener('click',startAsia);
 $('spaceBtn').addEventListener('click',startSpace);
 $('saBtn').addEventListener('click',startSA);
+$('naBtn').addEventListener('click',startNA);
 $('winBtn').addEventListener('click',()=>{$('win').hidden=true;$('start').hidden=false;st.over=false;});
 $('deadBtn').addEventListener('click',startGame);
 $('sailBtn').addEventListener('click',startSea);
