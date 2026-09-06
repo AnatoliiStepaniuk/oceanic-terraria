@@ -196,7 +196,7 @@
   <div class="panel">
     <div class="eyebrow">Європу пройдено 🎉🇪🇺</div>
     <h2>Ти обійшов усю Європу!</h2>
-    <p>Час: <b id="euTime">0:00</b>. Ти побував у всіх країнах — Франція, Італія, Іспанія, Німеччина, Британія, Нідерланди, Греція, Польща і рідна Україна 🇺🇦. Справжній мандрівник! 🏆</p>
+    <p>Час: <b id="euTime">0:00</b>. Ти побував у <b>всіх країнах Європи</b> — від рідної України 🇺🇦 до Іспанії, від Норвегії до Туреччини. Справжній мандрівник! 🏆</p>
     <div class="letter">
       <p><b>Костя,</b> ти пройшов усі 3 частини гри, яку сам придумав! 🎮 Хочеш додати щось іще? Запиши голосове — і зробимо.</p>
     </div>
@@ -314,6 +314,18 @@ const COUNTRIES=[
   {id:'it',name:'Італія',     cx:1235,cy:1230,rx:145,ry:305,tint:'#7ab85f',fact:'Італія — піца 🍕, Колізей і похила вежа!'},
   {id:'gr',name:'Греція',     cx:1560,cy:1370,rx:185,ry:205,tint:'#8cbf5e',fact:'Греція — стародавній храм з колонами 🏛️'},
   {id:'ua',name:'Україна',    cx:2090,cy:930, rx:295,ry:265,tint:'#7cbb60',fact:'Україна — наша рідна! Соняхи 🌻 і тризуб'},
+  {id:'dk',name:'Данія',      cx:1230,cy:470, rx:100,ry:110,tint:'#7ab85f',fact:'Данія — країна Лего 🧱 і русалоньки'},
+  {id:'no',name:'Норвегія',   cx:1130,cy:250, rx:135,ry:210,tint:'#74b35a',fact:'Норвегія — вікінги ⛵ і гори ⛰️'},
+  {id:'se',name:'Швеція',     cx:1360,cy:250, rx:130,ry:200,tint:'#7cbb60',fact:'Швеція — вікінги і червоний коник 🐴'},
+  {id:'fi',name:'Фінляндія',  cx:1600,cy:270, rx:125,ry:185,tint:'#8cbf5e',fact:'Фінляндія — ліси, сніг ❄️ і Санта!'},
+  {id:'ee',name:'Естонія',    cx:1900,cy:250, rx:92, ry:96, tint:'#7ab85f',fact:'Естонія — старовинні вежі 🏰'},
+  {id:'lv',name:'Латвія',     cx:1880,cy:410, rx:96, ry:96, tint:'#7cbb60',fact:'Латвія — місто Рига і ліси 🌲'},
+  {id:'lt',name:'Литва',      cx:1830,cy:565, rx:100,ry:100,tint:'#8cbf5e',fact:'Литва — замок і вежа Гедиміна 🏯'},
+  {id:'by',name:'Білорусь',   cx:1930,cy:720, rx:150,ry:150,tint:'#74b35a',fact:'Білорусь — ліси, зубри і лелеки 🕊️'},
+  {id:'ro',name:'Румунія',    cx:1830,cy:1130,rx:155,ry:145,tint:'#7ab85f',fact:'Румунія — замок Дракули 🦇'},
+  {id:'md',name:'Молдова',    cx:2030,cy:1040,rx:82, ry:88, tint:'#8cbf5e',fact:'Молдова — виноград 🍇 і вино'},
+  {id:'bg',name:'Болгарія',   cx:1720,cy:1320,rx:135,ry:135,tint:'#7cbb60',fact:'Болгарія — троянди 🌹 і церкви'},
+  {id:'tr',name:'Туреччина',  cx:1900,cy:1520,rx:180,ry:150,tint:'#8cbf5e',fact:'Туреччина — мечеть 🕌 (країна, не індичка 🦃!)'},
 ];
 const BRIDGES=[{cx:895,cy:560,rx:140,ry:48},{cx:1372,cy:1345,rx:82,ry:62}]; // Ла-Манш (Британія) + перешийок Італія↔Греція
 let freeCam=false;const focus={x:0,y:0};
@@ -847,6 +859,7 @@ function drawEurope(now){
 function drawFlag(x,y,id){const w=30,h=20,lx=x-w/2;
   const Hb=(a,b,c)=>{ctx.fillStyle=a;ctx.fillRect(lx,y,w,h/3);ctx.fillStyle=b;ctx.fillRect(lx,y+h/3,w,h/3);ctx.fillStyle=c;ctx.fillRect(lx,y+2*h/3,w,h/3);};
   const Vb=(a,b,c)=>{ctx.fillStyle=a;ctx.fillRect(lx,y,w/3,h);ctx.fillStyle=b;ctx.fillRect(lx+w/3,y,w/3,h);ctx.fillStyle=c;ctx.fillRect(lx+2*w/3,y,w/3,h);};
+  const nordic=(bg,cr)=>{ctx.fillStyle=bg;ctx.fillRect(lx,y,w,h);ctx.fillStyle=cr;ctx.fillRect(lx+w*0.32-3,y,6,h);ctx.fillRect(lx,y+h/2-3,w,6);};
   switch(id){
     case 'fr':Vb('#0055A4','#fff','#EF4135');break;
     case 'it':Vb('#009246','#fff','#CE2B37');break;
@@ -857,6 +870,18 @@ function drawFlag(x,y,id){const w=30,h=20,lx=x-w/2;
     case 'pl':ctx.fillStyle='#fff';ctx.fillRect(lx,y,w,h/2);ctx.fillStyle='#DC143C';ctx.fillRect(lx,y+h/2,w,h/2);break;
     case 'gr':ctx.fillStyle='#0D5EAF';ctx.fillRect(lx,y,w,h);for(let i=1;i<5;i+=2){ctx.fillStyle='#fff';ctx.fillRect(lx,y+i*(h/5),w,h/5);}ctx.fillStyle='#0D5EAF';ctx.fillRect(lx,y,h*0.55,h*0.55);ctx.fillStyle='#fff';ctx.fillRect(lx+h*0.22,y,h*0.11,h*0.55);ctx.fillRect(lx,y+h*0.22,h*0.55,h*0.11);break;
     case 'uk':ctx.fillStyle='#012169';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#fff';ctx.fillRect(lx+w/2-3,y,6,h);ctx.fillRect(lx,y+h/2-3,w,6);ctx.fillStyle='#C8102E';ctx.fillRect(lx+w/2-1.5,y,3,h);ctx.fillRect(lx,y+h/2-1.5,w,3);break;
+    case 'no':nordic('#BA0C2F','#fff');ctx.fillStyle='#00205B';ctx.fillRect(lx+w*0.32-1.5,y,3,h);ctx.fillRect(lx,y+h/2-1.5,w,3);break;
+    case 'se':nordic('#006AA7','#FECC00');break;
+    case 'fi':nordic('#fff','#003580');break;
+    case 'dk':nordic('#C60C30','#fff');break;
+    case 'ee':Hb('#0072CE','#000','#fff');break;
+    case 'lv':ctx.fillStyle='#9E3039';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#fff';ctx.fillRect(lx,y+h*0.4,w,h*0.2);break;
+    case 'lt':Hb('#FDB913','#006A44','#C1272D');break;
+    case 'by':ctx.fillStyle='#CE1720';ctx.fillRect(lx,y,w,h*0.66);ctx.fillStyle='#4AA657';ctx.fillRect(lx,y+h*0.66,w,h*0.34);ctx.fillStyle='#fff';ctx.fillRect(lx,y,4,h);break;
+    case 'ro':Vb('#002B7F','#FCD116','#CE1126');break;
+    case 'md':Vb('#0046AE','#FFD200','#CC092F');break;
+    case 'bg':Hb('#fff','#00966E','#D62612');break;
+    case 'tr':ctx.fillStyle='#E30A17';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(lx+w*0.42,y+h/2,6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#E30A17';ctx.beginPath();ctx.arc(lx+w*0.48,y+h/2,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='700 9px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+w*0.64,y+h/2+3.5);break;
     default:ctx.fillStyle='#ccc';ctx.fillRect(lx,y,w,h);
   }
   ctx.strokeStyle='#0f1c2a';ctx.lineWidth=1;ctx.strokeRect(lx,y,w,h);
@@ -872,6 +897,18 @@ function drawLandmark(c,tsec){const x=c.cx,y=c.cy;
     case 'gr':euTemple(x,y);break;
     case 'ua':euSunflower(x,y,tsec);break;
     case 'pl':euCastle(x,y);break;
+    case 'dk':euHouse(x,y,'#c0392b');break;
+    case 'no':euViking(x,y);break;
+    case 'se':euPine(x-16,y);euDala(x+14,y);break;
+    case 'fi':euPine(x,y,true);break;
+    case 'ee':euTower(x,y,'#b03a3a');break;
+    case 'lv':euTower(x,y,'#8a2b2b');break;
+    case 'lt':euTower(x,y,'#3a7d4a');break;
+    case 'by':euChurch(x,y,'#6b8f3a');break;
+    case 'ro':euCastle(x,y);ctx.fillStyle='#2b2b2b';ctx.beginPath();ctx.moveTo(x-4,y-66);ctx.lineTo(x+2,y-62);ctx.lineTo(x+8,y-66);ctx.lineTo(x+2,y-64);ctx.closePath();ctx.fill();break;
+    case 'md':euGrapes(x,y);break;
+    case 'bg':euChurch(x,y,'#c9a24a');break;
+    case 'tr':euMosque(x,y);break;
   }
 }
 function shadow(x,y,r){ctx.fillStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.ellipse(x,y+4,r,r*0.24,0,0,Math.PI*2);ctx.fill();}
@@ -925,6 +962,38 @@ function euCastle(x,y){shadow(x,y,36);ctx.fillStyle='#b7a48c';ctx.fillRect(x-30,
   ctx.beginPath();ctx.moveTo(x+25,y-40);ctx.lineTo(x+33,y-52);ctx.lineTo(x+41,y-40);ctx.closePath();ctx.fill();
   ctx.fillStyle='#5b3a1e';ctx.fillRect(x-7,y-14,14,18);
   ctx.strokeStyle='#8a5a2b';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-33,y-52);ctx.lineTo(x-33,y-60);ctx.stroke();ctx.fillStyle='#DC143C';ctx.fillRect(x-33,y-60,10,6);}
+function euViking(x,y){shadow(x,y,30);ctx.fillStyle='#6b4a2b';
+  ctx.beginPath();ctx.moveTo(x-30,y-6);ctx.quadraticCurveTo(x,y+8,x+30,y-6);ctx.lineTo(x+24,y-14);ctx.lineTo(x-24,y-14);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(x-30,y-6);ctx.lineTo(x-40,y-22);ctx.lineTo(x-28,y-20);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#8a5a2b';ctx.fillRect(x-2,y-46,4,32);
+  ctx.fillStyle='#efe6cf';ctx.fillRect(x-16,y-44,32,22);
+  ctx.fillStyle='#c0392b';for(let i=0;i<3;i++)ctx.fillRect(x-16,y-44+i*8,32,4);
+  ctx.fillStyle='#f5b301';for(let i=-2;i<=2;i++){ctx.beginPath();ctx.arc(x+i*11,y-11,4,0,Math.PI*2);ctx.fill();}}
+function euPine(x,y,snow){shadow(x,y,18);ctx.fillStyle='#6b4a2b';ctx.fillRect(x-3,y-10,6,12);
+  ctx.fillStyle=snow?'#3f7d4a':'#2e8b3a';for(let i=0;i<3;i++){const ty=y-10-i*13,w=20-i*5;ctx.beginPath();ctx.moveTo(x-w,ty);ctx.lineTo(x,ty-20);ctx.lineTo(x+w,ty);ctx.closePath();ctx.fill();}
+  if(snow){ctx.fillStyle='#fff';for(let i=0;i<3;i++){const ty=y-10-i*13;ctx.beginPath();ctx.moveTo(x,ty-20);ctx.lineTo(x-6,ty-11);ctx.lineTo(x+6,ty-11);ctx.closePath();ctx.fill();}}}
+function euDala(x,y){ctx.fillStyle='#c0392b';ctx.beginPath();ctx.ellipse(x,y-9,10,6,0,0,Math.PI*2);ctx.fill();ctx.fillRect(x-8,y-8,3,7);ctx.fillRect(x+5,y-8,3,7);ctx.beginPath();ctx.moveTo(x+7,y-13);ctx.lineTo(x+16,y-22);ctx.lineTo(x+11,y-9);ctx.closePath();ctx.fill();ctx.fillStyle='#f5b301';ctx.fillRect(x+11,y-20,2,5);}
+function euHouse(x,y,col){shadow(x,y,20);ctx.fillStyle=col;ctx.fillRect(x-16,y-24,32,26);
+  ctx.fillStyle='#8a3b2b';ctx.beginPath();ctx.moveTo(x-20,y-24);ctx.lineTo(x,y-40);ctx.lineTo(x+20,y-24);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#5b3a1e';ctx.fillRect(x-5,y-14,10,16);ctx.fillStyle='#bfe3f5';ctx.fillRect(x-13,y-20,8,8);ctx.fillRect(x+5,y-20,8,8);}
+function euTower(x,y,roof){shadow(x,y,14);ctx.fillStyle='#c9b89a';ctx.fillRect(x-10,y-44,20,46);
+  ctx.fillStyle='#b3a184';ctx.fillRect(x-10,y-44,20,3);
+  ctx.fillStyle=roof||'#b03a3a';ctx.beginPath();ctx.moveTo(x-13,y-44);ctx.lineTo(x,y-64);ctx.lineTo(x+13,y-44);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#5b3a1e';ctx.fillRect(x-4,y-14,8,16);ctx.fillStyle='#7a6a4a';ctx.fillRect(x-8,y-30,5,6);ctx.fillRect(x+3,y-30,5,6);}
+function euChurch(x,y,dome){shadow(x,y,20);ctx.fillStyle='#efe6d2';ctx.fillRect(x-18,y-30,36,32);
+  ctx.fillStyle='#d8cbb0';ctx.fillRect(x-18,y-30,36,3);ctx.fillStyle='#efe6d2';ctx.fillRect(x-8,y-46,16,16);
+  const onion=(ox,oy,r)=>{ctx.fillStyle=dome||'#3a7d8c';ctx.beginPath();ctx.moveTo(ox-r,oy);ctx.quadraticCurveTo(ox-r,oy-r*1.4,ox,oy-r*1.9);ctx.quadraticCurveTo(ox+r,oy-r*1.4,ox+r,oy);ctx.closePath();ctx.fill();ctx.fillStyle='#f5b301';ctx.fillRect(ox-1,oy-r*1.9-6,2,6);};
+  onion(x,y-46,9);onion(x-13,y-30,5);onion(x+13,y-30,5);
+  ctx.fillStyle='#5b3a1e';ctx.fillRect(x-5,y-14,10,16);}
+function euGrapes(x,y){shadow(x,y,16);ctx.strokeStyle='#4a2f18';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-2);ctx.lineTo(x,y-28);ctx.stroke();
+  ctx.fillStyle='#7b4fa0';for(const[dx,dy]of [[0,-8],[-6,-13],[6,-13],[-3,-18],[3,-18],[0,-23],[-9,-8],[9,-8]])ctx.beginPath(),ctx.arc(x+dx,y+dy,4,0,Math.PI*2),ctx.fill();
+  ctx.fillStyle='#3fa64a';ctx.beginPath();ctx.ellipse(x+9,y-28,7,4,0.5,0,Math.PI*2);ctx.fill();}
+function euMosque(x,y){shadow(x,y,28);ctx.fillStyle='#e7e0d0';ctx.fillRect(x-26,y-30,52,32);
+  ctx.fillStyle='#4a86b0';ctx.beginPath();ctx.arc(x,y-30,20,Math.PI,0);ctx.fill();
+  ctx.fillStyle='#f5b301';ctx.fillRect(x-1,y-58,2,8);ctx.beginPath();ctx.arc(x,y-60,3,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#e7e0d0';ctx.fillRect(x-30,y-54,6,54);ctx.fillRect(x+24,y-54,6,54);
+  ctx.fillStyle='#4a86b0';ctx.beginPath();ctx.moveTo(x-31,y-54);ctx.lineTo(x-27,y-64);ctx.lineTo(x-23,y-54);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(x+23,y-54);ctx.lineTo(x+27,y-64);ctx.lineTo(x+31,y-54);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#5b3a1e';ctx.fillRect(x-6,y-16,12,18);}
 function drawEuropeMini(){
   mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#1b6fa8';mm.fillRect(0,0,mmC.width,mmC.height);
   const kx=mmC.width/EUR.w,ky=mmC.height/EUR.h;
