@@ -537,8 +537,8 @@ function updateUI(){
   if(st.scene==='space'){
     const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
     const qk='sp'+st.planets+(st.spaceHome?'h':'');
-    if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">🚀</span><span>'+(st.spaceHome?'Лети додому 🌍':'Облети всі планети')+'</span></div>';questHint.innerHTML=`Планети: <b>${st.planets}/${PLANET_TARGET}</b> 🪐`;}
-    let h=st.toastT>0?st.toastMsg:(st.spaceHome?'Лети вниз до 🏠 старту':'Лети до планет 🪐 (обминай Сонце ☀️)');
+    if(ui.quest!==qk){ui.quest=qk;stepsEl.innerHTML='<div class="step cur"><span class="k">🚀</span><span>'+(st.spaceHome?'Приземлись на Землю 🌍':'Облети всі планети')+'</span></div>';questHint.innerHTML=`Планети: <b>${st.planets}/${PLANET_TARGET}</b> 🪐`;}
+    let h=st.toastT>0?st.toastMsg:(st.spaceHome?'Лети на Землю 🌍 → Південна Америка':'Лети до планет 🪐 (обминай Сонце ☀️)');
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -1467,8 +1467,8 @@ function updateSpace(dt){
   for(const p of PLANETS){const d=Math.hypot(player.x-p.cx,player.y-p.cy);
     if(p.sun){if(d<p.r+16){const a=Math.atan2(player.y-p.cy,player.x-p.cx);player.x=p.cx+Math.cos(a)*(p.r+18);player.y=p.cy+Math.sin(a)*(p.r+18);player.mtx=player.mty=null;toast('Гаряче! 🔥 Тікай від Сонця!',1.6);}continue;}
     if(d<p.r+22&&!st.planetsSeen[p.id]){st.planetsSeen[p.id]=true;st.planets++;sfx('craft');toast(p.fact,2.8);floats.push({x:p.cx,y:p.cy-p.r-10,s:'✓ '+p.name,t:0});
-      if(st.planets>=PLANET_TARGET&&!st.spaceHome){st.spaceHome=true;toast('Усі планети! 🎉 Лети додому 🌍 (вниз, де старт)',4);}}}
-  if(st.spaceHome&&Math.hypot(player.x-SPACE.startX,player.y-SPACE.startY)<52)spaceWin();
+      if(st.planets>=PLANET_TARGET&&!st.spaceHome){st.spaceHome=true;toast('Усі планети! 🎉 Тепер лети на Землю 🌍 — приземлишся у Пд. Америці!',4.5);}}}
+  if(st.spaceHome){const ea=PLANETS.find(p=>p.id==='ea');if(ea&&Math.hypot(player.x-ea.cx,player.y-ea.cy)<ea.r+18){sfx('win');startSA();return;}}
   for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.6)floats.splice(i,1);}
 }
 function drawSpace(now){
@@ -1480,7 +1480,7 @@ function drawSpace(now){
   ctx.fillStyle='#070a18';ctx.fillRect(cam.x-40,cam.y-40,vwz+80,vhz+80);
   if(stars)for(const s of stars){if(s.x<cam.x-10||s.x>cam.x+vwz+10||s.y<cam.y-10||s.y>cam.y+vhz+10)continue;const tw=.5+.5*Math.sin(tsec*3+s.p);ctx.fillStyle=`rgba(255,255,255,${.3+tw*.6})`;ctx.fillRect(s.x,s.y,s.r,s.r);}
   // home marker
-  if(st.spaceHome){const hx=SPACE.startX,hy=SPACE.startY,g=(Math.sin(tsec*4)+1)/2;ctx.strokeStyle=`rgba(120,220,120,${.5+g*.4})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(hx,hy,40,0,Math.PI*2);ctx.stroke();ctx.font='700 14px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#bff0a8';ctx.fillText('🏠 ДОДОМУ',hx,hy-46);}
+  if(st.spaceHome){const ea=PLANETS.find(p=>p.id==='ea');if(ea){const g=(Math.sin(tsec*4)+1)/2;ctx.strokeStyle=`rgba(120,220,120,${.5+g*.4})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(ea.cx,ea.cy,ea.r+14,0,Math.PI*2);ctx.stroke();ctx.font='700 13px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#0a1020';ctx.fillText('🌍 Приземлись тут!',ea.cx+1,ea.cy-ea.r-23);ctx.fillStyle='#bff0a8';ctx.fillText('🌍 Приземлись тут!',ea.cx,ea.cy-ea.r-24);}}
   for(const p of PLANETS){if(p.cx<cam.x-p.r-140||p.cx>cam.x+vwz+p.r+140||p.cy<cam.y-p.r-140||p.cy>cam.y+vhz+p.r+140)continue;
     if(p.sun){const gr=ctx.createRadialGradient(p.cx,p.cy,10,p.cx,p.cy,p.r+30);gr.addColorStop(0,'#fff2a8');gr.addColorStop(.5,p.col);gr.addColorStop(1,'rgba(255,170,40,0)');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(p.cx,p.cy,p.r+30,0,Math.PI*2);ctx.fill();}
     if(p.ring){ctx.strokeStyle='#cbb26a';ctx.lineWidth=5;ctx.save();ctx.translate(p.cx,p.cy);ctx.scale(1,.4);ctx.beginPath();ctx.arc(0,0,p.r+16,0,Math.PI*2);ctx.stroke();ctx.restore();}
