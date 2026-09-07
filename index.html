@@ -261,7 +261,7 @@
     <h2>Усі завдання виконано!</h2>
     <p>Час: <b id="saTime">0:00</b>. <span id="saWinP">Ти виконав завдання всіх країн!</span> 🏆</p>
     <div class="letter"><p><b>Костя,</b> ти молодець! 🎉 Хочеш ще щось — розкажи голосом.</p></div>
-    <div class="row" style="justify-content:center"><button class="btn" id="saRebirthBtn">Переродження 🔄 (спочатку)</button></div>
+    <div class="row" style="justify-content:center"><button class="btn" id="saNextBtn">Далі ➡️</button></div>
   </div>
 </div>
 
@@ -495,6 +495,20 @@ const NA_COUNTRIES=[
   {id:'cu',name:'Куба',     cx:1650,cy:2120,rx:170,ry:78, tint:'#7cbb60',fact:'Куба — острів, музика 🎵 і пальми',q:'Танцювати весело? 💃'},
 ];
 const NA_BRIDGES=[{cx:1880,cy:520,rx:135,ry:120},{cx:1400,cy:2085,rx:155,ry:110}]; // Канада↔Ґренландія, Мексика↔Куба
+// ---- Антарктида (частина 8): крижаний континент, який ділять країни-претенденти ----
+// 8 ділянок-претензій великими колами навколо Південного полюса (1200,1200): нахляпуються → один суцільний прохідний диск, а countryAt (найближчий центр) ріже його на «шматки-претензії».
+const AN_CFG={w:2400,h:2400,startX:1200,startY:1500,ship:{x:1200,y:2090},id:'an',tasks:true,dispName:'Антарктида'};
+const AN_COUNTRIES=[
+  {id:'uk',name:'Британія',    cx:1200,cy:820, rx:430,ry:430,tint:'#dfe9f2',fact:'Британія має свою ділянку Антарктиди 🇬🇧🧊',q:'Ти б хотів побачити айсберг більший за будинок? 🧊'},
+  {id:'no',name:'Норвегія',    cx:1469,cy:931, rx:430,ry:430,tint:'#e8f1f8',fact:'Норвежець Амундсен перший дійшов до Південного полюса 🚩',q:'Ти б хотів бути першим, хто кудись дійшов? 🚩'},
+  {id:'au',name:'Австралія',   cx:1580,cy:1200,rx:430,ry:430,tint:'#dfe9f2',fact:'Австралія має найбільшу ділянку Антарктиди 🦘❄️',q:'Ти б поплавав із пінгвінами в крижаній воді? 🐧'},
+  {id:'nz',name:'Нова Зеландія',cx:1469,cy:1469,rx:430,ry:430,tint:'#e8f1f8',fact:'Нова Зеландія близько до Антарктиди 🥝',q:'Ти б жив цілий рік на крижаній станції? ❄️'},
+  {id:'ch',name:'Чилі',        cx:1200,cy:1580,rx:430,ry:430,tint:'#dfe9f2',fact:'Чилі — одна з найближчих країн до Антарктиди ⛰️',q:'Добре, що на Землі є місце майже без людей? 🏔️'},
+  {id:'ar',name:'Аргентина',   cx:931, cy:1469,rx:430,ry:430,tint:'#e8f1f8',fact:'В Антарктиді народилась перша дитина — аргентинець 👶',q:'Ти б збудував собі будиночок зі снігу — іглу? 🧊'},
+  {id:'fr',name:'Франція',     cx:820, cy:1200,rx:430,ry:430,tint:'#dfe9f2',fact:'Франція має вузьку ділянку Антарктиди 🇫🇷',q:'Пінгвіни не літають, зате чудово плавають. Це круто? 🐧'},
+  {id:'af',name:'Афр. Союз',   cx:931, cy:931, rx:430,ry:430,tint:'#e8f1f8',fact:'Африканський Союз теж хотів би шматочок криги ❄️',q:'В Африці спека, а тут мороз. Проміняв би спеку на сніг? ⛄'},
+];
+const AN_BRIDGES=[]; // не потрібні — усі ділянки перекриваються
 let COUNTRIES=EUROPE_COUNTRIES;   // активний список країн
 let BRIDGES=EUROPE_BRIDGES;       // активні містки
 let freeCam=false;const focus={x:0,y:0};
@@ -1029,7 +1043,7 @@ function countryAt(x,y){let best=null,bd=Infinity;for(const c of COUNTRIES){cons
 const EMOJI={fr:'🗼',it:'🍕',es:'🐂',de:'🥨',uk:'🕰️',nl:'🌷',gr:'🏛️',ua:'🌻',pl:'🏰',dk:'🧱',no:'⛵',se:'🐴',fi:'❄️',ee:'🏰',lv:'🌲',lt:'🏯',by:'🕊️',ro:'🦇',md:'🍇',bg:'🌹',tr:'🕌',pt:'🐓',lo:'🐻',be:'🧇',lu:'🏰',ru:'🌲',kz:'⛺',mn:'🐎',cn:'🐼',in:'🐘',kr:'🍜',jp:'🍣',
   uz:'🕌',tm:'🔥',tj:'⛰️',kg:'⛺',pk:'🕌',np:'🏔️',bd:'🐯',lk:'🐘',mm:'✨',th:'🐘',la:'🛕',kh:'🛕',vn:'🌾',my:'🌴',sg:'🦁',id:'🌋',ph:'🏝️',
   br:'⚽',ve:'💧',co:'☕',ec:'🌍',pe:'🦙',bo:'✨',py:'🌳',ch:'⛰️',uy:'🏖️',ar:'💃',
-  gl:'🧊',ca:'🍁',us:'🗽',mx:'🌯',gt:'🗿',cu:'🎵'};
+  gl:'🧊',ca:'🍁',us:'🗽',mx:'🌯',gt:'🗿',cu:'🎵',au:'🦘',nz:'🥝',af:'🌍'};
 const IN={w:760,h:560,wall:26,doorW:100};
 function openInside(c){st.insideCountry=c;st.euReturn={x:player.x,y:player.y};st.scene='inside';
   player.x=IN.w/2;player.y=IN.h-IN.wall-28;player.dir='up';player.moving=false;player.mtx=player.mty=null;
@@ -1165,8 +1179,23 @@ function startNA(){
   $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('saWin').hidden=true;$('menu').hidden=true;const rk=$('rocket');if(rk)rk.hidden=true;
   toast('Ти у Північній Америці, у США! 🇺🇸 Виконай завдання всіх країн (буріто, переклад, літак)',4.4);
 }
+function startAntarctica(){
+  EUR=AN_CFG;COUNTRIES=AN_COUNTRIES;BRIDGES=AN_BRIDGES;
+  st.scene='europe';st.running=true;st.over=false;st.won=true;st.cloth=NEED_CLOTH;st.time=0;st.toastT=0;st.euWon=false;st.euSeen={};st.saWon=false;st.saDone={};
+  player.x=EUR.startX;player.y=EUR.startY;player.dir='up';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
+  freeCam=false;focus.x=player.x;focus.y=player.y;floats.length=0;
+  ui.quest='';ui.hint='';ui.time=-1;layoutHud();
+  $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('saWin').hidden=true;$('menu').hidden=true;const rk=$('rocket');if(rk)rk.hidden=true;
+  toast('Ти в Антарктиді! ❄️🐧 Цей крижаний край ділять багато країн. Обійди всі ділянки і виконай завдання!',4.8);
+}
 function europeWin(){if(st.euWon)return;st.euWon=true;sfx('win');$('euTime').textContent=fmtTime(st.time);setTimeout(()=>{if(st.scene==='europe'&&st.euWon){st.running=false;$('europeWin').hidden=false;}},1300);}
-function saWin(){if(st.saWon)return;st.saWon=true;sfx('win');const nm=EUR.dispName||'континент';$('saWinEyebrow').textContent=nm+' пройдено 🎉';$('saWinP').textContent='Ти виконав завдання всіх країн: '+nm+'!';$('saTime').textContent=fmtTime(st.time);setTimeout(()=>{if(st.scene==='europe'&&st.saWon){st.running=false;$('saWin').hidden=false;}},1200);}
+function saWin(){if(st.saWon)return;st.saWon=true;sfx('win');const nm=EUR.dispName||'континент';$('saWinEyebrow').textContent=nm+' пройдено 🎉';$('saWinP').textContent='Ти виконав завдання всіх країн: '+nm+'!';$('saTime').textContent=fmtTime(st.time);
+  const nb=$('saNextBtn'),rid=EUR.id;
+  if(rid==='sa'){nb.textContent='Далі: Північна Америка 🌎';nb.onclick=()=>{$('saWin').hidden=true;startNA();};}
+  else if(rid==='na'){nb.textContent='Летимо в Антарктиду ✈️❄️';nb.onclick=()=>{$('saWin').hidden=true;startAntarctica();};}
+  else if(rid==='an'){nb.textContent='Ти пройшов усю Землю! 🏆 Почати спочатку 🔄';nb.onclick=()=>{$('saWin').hidden=true;startGame();};}
+  else{nb.textContent='Переродження 🔄 (спочатку)';nb.onclick=()=>{$('saWin').hidden=true;startGame();};}
+  setTimeout(()=>{if(st.scene==='europe'&&st.saWon){st.running=false;$('saWin').hidden=false;}},1200);}
 function saQuestInfo(){const qs=COUNTRIES.filter(c=>c.match||c.q||c.snakes||c.cook||c.translate||c.plane);let done=0;for(const c of qs)if(st.saDone[c.id])done++;return{done,total:qs.length};}
 function checkSaWin(){if(!EUR.tasks||st.saWon)return;const q=saQuestInfo();if(q.total>0&&q.done>=q.total)saWin();}
 function updateEurope(dt){
@@ -1208,10 +1237,11 @@ function drawEurope(now){
   ctx.fillStyle='rgba(255,255,255,.08)';
   for(let gy=gy0;gy<cam.y+vhz+40;gy+=gs)for(let gx=gx0;gx<cam.x+vwz+40;gx+=gs){const ci=Math.floor(gx/gs),ri=Math.floor(gy/gs),ph=(ci*3+ri*5+Math.floor(tsec*2))%5;ctx.fillRect(gx+5+ph*3,gy+13,10,2);}
   for(const b of BRIDGES){ctx.fillStyle='#6fb257';ctx.beginPath();ctx.ellipse(b.cx,b.cy,b.rx,b.ry,0,0,Math.PI*2);ctx.fill();}
-  for(const c of COUNTRIES){ctx.fillStyle='#e8d59a';ctx.beginPath();ctx.ellipse(c.cx,c.cy,c.rx+9,c.ry+9,0,0,Math.PI*2);ctx.fill();}
+  const ice=EUR.id==='an';
+  for(const c of COUNTRIES){ctx.fillStyle=ice?'#cfe0ee':'#e8d59a';ctx.beginPath();ctx.ellipse(c.cx,c.cy,c.rx+9,c.ry+9,0,0,Math.PI*2);ctx.fill();}
   for(const c of COUNTRIES){ctx.fillStyle=c.tint;ctx.beginPath();ctx.ellipse(c.cx,c.cy,c.rx,c.ry,0,0,Math.PI*2);ctx.fill();}
-  ctx.fillStyle='rgba(70,150,50,.5)';
-  for(const c of COUNTRIES){for(let k=0;k<44;k++){const a=k*2.399,r=Math.sqrt((k+1)/44);const gx=c.cx+Math.cos(a)*c.rx*r*0.92,gy=c.cy+Math.sin(a)*c.ry*r*0.92;ctx.fillRect(gx,gy,2,4);}}
+  ctx.fillStyle=ice?'rgba(255,255,255,.85)':'rgba(70,150,50,.5)';
+  for(const c of COUNTRIES){for(let k=0;k<44;k++){const a=k*2.399,r=Math.sqrt((k+1)/44);const gx=c.cx+Math.cos(a)*c.rx*r*0.92,gy=c.cy+Math.sin(a)*c.ry*r*0.92;if(ice)ctx.fillRect(gx,gy,3,3);else ctx.fillRect(gx,gy,2,4);}}
   if(marker.t<0.6){const a=1-marker.t/0.6,rr=8+marker.t*30;ctx.strokeStyle=`rgba(245,236,214,${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,rr,0,Math.PI*2);ctx.stroke();}
   const ents=[],iv=(x,y)=>x>cam.x-140&&x<cam.x+vwz+140&&y>cam.y-170&&y<cam.y+vhz+140;
   for(const c of COUNTRIES)if(iv(c.cx,c.cy))ents.push({y:c.cy,f:()=>drawLandmark(c,tsec)});
@@ -1298,11 +1328,30 @@ function drawFlag(x,y,id){const w=30,h=20,lx=x-w/2;
     case 'mx':Vb('#006847','#fff','#CE1126');ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,2.5,0,Math.PI*2);ctx.fill();break;
     case 'gt':Vb('#4997D0','#fff','#4997D0');ctx.fillStyle='#5a7d3a';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,2.5,0,Math.PI*2);ctx.fill();break;
     case 'cu':for(let i=0;i<5;i++){ctx.fillStyle=i%2?'#fff':'#002A8F';ctx.fillRect(lx,y+i*(h/5),w,h/5);}ctx.fillStyle='#CF142B';ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx+w*0.44,y+h/2);ctx.lineTo(lx,y+h);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.font='700 8px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+w*0.13,y+h/2+3);break;
+    case 'au':case 'nz':{ctx.fillStyle='#00247D';ctx.fillRect(lx,y,w,h);
+      ctx.fillStyle='#012169';ctx.fillRect(lx,y,w*0.5,h*0.5);
+      ctx.fillStyle='#fff';ctx.fillRect(lx+w*0.24-2,y,4,h*0.5);ctx.fillRect(lx,y+h*0.25-2,w*0.5,4);
+      ctx.fillStyle='#C8102E';ctx.fillRect(lx+w*0.24-1,y,2,h*0.5);ctx.fillRect(lx,y+h*0.25-1,w*0.5,2);
+      ctx.fillStyle=id==='nz'?'#C8102E':'#fff';ctx.font='700 9px Rubik';ctx.textAlign='center';
+      ctx.fillText('★',lx+w*0.7,y+h*0.44);ctx.fillText('★',lx+w*0.83,y+h*0.68);ctx.fillText('★',lx+w*0.66,y+h*0.8);
+      if(id==='au'){ctx.fillStyle='#fff';ctx.fillText('★',lx+w*0.22,y+h*0.86);}break;}
+    case 'af':ctx.fillStyle='#0a7d3b';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#f6c700';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#0a7d3b';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,2.6,0,Math.PI*2);ctx.fill();break;
     default:ctx.fillStyle='#ccc';ctx.fillRect(lx,y,w,h);
   }
   ctx.strokeStyle='#0f1c2a';ctx.lineWidth=1;ctx.strokeRect(lx,y,w,h);
 }
+function antScenery(c,x,y,tsec){shadow(x,y,22);
+  ctx.fillStyle='#eef6fc';ctx.beginPath();ctx.ellipse(x,y-3,34,15,0,Math.PI,0);ctx.fill();          // сніговий горб
+  const bob=Math.sin(tsec*2+x*0.05)*1.5;
+  ctx.fillStyle='#26313a';ctx.beginPath();ctx.ellipse(x,y-26+bob,13,19,0,0,Math.PI*2);ctx.fill();    // тіло
+  ctx.fillStyle='#f7fbff';ctx.beginPath();ctx.ellipse(x,y-22+bob,8,14,0,0,Math.PI*2);ctx.fill();      // живіт
+  ctx.fillStyle='#26313a';ctx.beginPath();ctx.arc(x,y-41+bob,8,0,Math.PI*2);ctx.fill();               // голова
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x-3,y-43+bob,1.7,0,Math.PI*2);ctx.arc(x+3,y-43+bob,1.7,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#000';ctx.beginPath();ctx.arc(x-3,y-43+bob,.9,0,Math.PI*2);ctx.arc(x+3,y-43+bob,.9,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#f6a417';ctx.beginPath();ctx.moveTo(x-3,y-39+bob);ctx.lineTo(x+3,y-39+bob);ctx.lineTo(x,y-35+bob);ctx.closePath();ctx.fill(); // дзьоб
+  ctx.fillStyle='#f6a417';ctx.fillRect(x-5,y-8+bob,3,4);ctx.fillRect(x+2,y-8+bob,3,4);}               // лапки
 function drawLandmark(c,tsec){const x=c.cx,y=c.cy;
+  if(EUR.id==='an'){antScenery(c,x,y,tsec);return;}
   switch(c.id){
     case 'fr':euEiffel(x,y);break;
     case 'it':euColosseum(x,y);break;
@@ -1791,7 +1840,6 @@ $('euExploreBtn').addEventListener('click',()=>{$('europeWin').hidden=true;st.ru
 $('insideExit').addEventListener('click',()=>{$('inside').hidden=true;player.mtx=player.mty=null;st.running=true;});
 $('launchBtn').addEventListener('click',()=>{$('rocket').hidden=true;startSpace();});
 $('spaceRebirthBtn').addEventListener('click',()=>{$('spaceWin').hidden=true;startGame();});
-$('saRebirthBtn').addEventListener('click',()=>{$('saWin').hidden=true;startGame();});
 $('listBtn').addEventListener('click',openChecklist);
 $('airportBtn').addEventListener('click',goToStart);
 $('qYes').addEventListener('click',()=>answerQuestion(true));
