@@ -173,9 +173,9 @@
 
 <div id="win" class="overlay" hidden>
   <div class="panel">
-    <div class="eyebrow">Частина 1 пройдена 🎉</div>
-    <h2>Пліт готовий!</h2>
-    <p>Час: <b id="winTime">0:00</b>. Ти вижив, одягнувся і зібрав пліт. Тепер — у море!</p>
+    <div class="eyebrow">Пліт готовий ⛵</div>
+    <h2>Попливемо?</h2>
+    <p>Час: <b id="winTime">0:00</b>. Ти зібрав пліт! Можеш попливти в море — або лишитись і гуляти островом скільки хочеш.</p>
     <div class="letter">
       <p><b>Костя,</b> це Частина 2 — твоя ідея! Пливи на плоту через море до <b>Франції</b>, у місто <b>Париж</b>, де стоїть Ельфова (Ейфелева) вежа 🗼.</p>
       <ul>
@@ -187,7 +187,7 @@
     </div>
     <div class="row">
       <button class="btn" id="sailBtn">Пливти до Франції 🇫🇷⛵</button>
-      <button class="btn" id="winBtn" style="background:var(--panel-2);color:var(--cream);box-shadow:0 4px 0 var(--ink)">Ще раз острів</button>
+      <button class="btn" id="winBtn" style="background:var(--panel-2);color:var(--cream);box-shadow:0 4px 0 var(--ink)">Лишитись на острові 🌴</button>
     </div>
   </div>
 </div>
@@ -678,7 +678,7 @@ function die(cause){
 function reset(){
   Object.assign(player,{x:spawn.x,y:spawn.y,dir:'down',hunger:100,thirst:100,hurt:0,anim:0});clearTask();
   Object.assign(inv,{wood:0,fiber:0,axe:0});Object.assign(invested,{wood:0,fiber:0});
-  Object.assign(st,{running:true,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false});
+  Object.assign(st,{running:true,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false,raftReadyShown:false});
   for(const p of palms){p.alive=true;p.hits=0;p.regrow=0;p.shake=0;}
   if(axe)axe.taken=false;drops.length=0;floats.length=0;seen.fill(0);ui.quest='';ui.hint='';marker.t=9;freeCam=false;focus.x=spawn.x;focus.y=spawn.y;
   $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('menu').hidden=true;const fr=$('france');if(fr)fr.hidden=true;
@@ -741,7 +741,7 @@ function update(dt){
   for(const p of palms){if(p.shake>0)p.shake=Math.max(0,p.shake-dt*4);if(!p.alive){p.regrow-=dt;if(p.regrow<=0){p.alive=true;p.hits=0;}}}
   if(st.raft<st.raftTarget)st.raft=Math.min(st.raftTarget,st.raft+dt*45);
   if(st.hammer>0)st.hammer-=dt;
-  if(st.raft>=100&&!st.won&&st.hammer<=0){st.hammer=1;setTimeout(win,700);}
+  if(st.raft>=100&&!st.raftReadyShown){st.raftReadyShown=true;sfx('win');toast('Пліт готовий! ⛵ Тапни пліт, щоб попливти — або виживай на острові скільки хочеш 🌴',5);}
   for(const f of fish)f.a+=f.sp*dt;
   for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.4)floats.splice(i,1);}
   const ptx=Math.floor(player.x/T),pty=Math.floor(player.y/T);
@@ -1811,6 +1811,7 @@ function tapWorld(clientX,clientY){
   if(axe&&!axe.taken&&Math.hypot(axe.px-wx,axe.py-wy)<34){player.taskAxe=true;player.mtx=axe.px;player.mty=axe.py+14;marker.x=axe.px;marker.y=axe.py;marker.kind='go';}
   else if(spring&&Math.hypot(spring.px-wx,spring.py-wy)<38){player.taskDrink=true;player.mtx=spring.px;player.mty=spring.py+24;marker.x=spring.px;marker.y=spring.py;marker.kind='go';}
   else if(Math.hypot(site.px-wx,site.py-wy)<44&&st.raft<100){player.taskSite=true;player.mtx=site.px;player.mty=site.py+18;marker.x=site.px;marker.y=site.py;marker.kind='build';}
+  else if(Math.hypot(site.px-wx,site.py-wy)<44&&st.raft>=100){win();player.mtx=player.mty=null;}
   else{player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';}
   marker.t=0;
 }
@@ -1829,7 +1830,7 @@ $('asiaBtn').addEventListener('click',startAsia);
 $('spaceBtn').addEventListener('click',startSpace);
 $('saBtn').addEventListener('click',startSA);
 $('naBtn').addEventListener('click',startNA);
-$('winBtn').addEventListener('click',()=>{$('win').hidden=true;$('start').hidden=false;st.over=false;});
+$('winBtn').addEventListener('click',()=>{$('win').hidden=true;st.running=true;st.won=false;st.over=false;});
 $('deadBtn').addEventListener('click',startGame);
 $('sailBtn').addEventListener('click',startSea);
 $('rebirthBtn').addEventListener('click',()=>{$('france').hidden=true;startGame();});
