@@ -158,6 +158,7 @@
       <button class="btn" id="saBtn">🌎 6. Пд. Америка</button>
       <button class="btn" id="naBtn">🌎 7. Півн. Америка</button>
       <button class="btn" id="anBtn">❄️ 8. Антарктида</button>
+      <button class="btn" id="ocBtn">🦘 9. Океанія</button>
     </div>
     <div class="credit">Правила придумав Костя. Пальма дає 6 листків, 1 деревину і 3 кокоси — як він і сказав.</div>
   </div>
@@ -393,7 +394,7 @@ const player={x:0,y:0,dir:'down',moving:false,anim:0,hunger:100,thirst:100,hurt:
 const marker={x:0,y:0,t:9,kind:'go'};
 const inv={wood:0,fiber:0,axe:0};
 const invested={wood:0,fiber:0};
-const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false,coco:0,euVisited:0,euWon:false,euSeen:{},parts:0,planets:0,planetsSeen:{},spaceWon:false,hasSword:false,snakesKilled:0,saWon:false,matchYou:0,matchEng:0,saDone:{}};
+const st={running:false,over:false,time:0,ate:0,drank:0,cloth:0,raft:0,raftTarget:0,hammer:0,won:false,toastT:0,toastMsg:'',questIdx:0,actCd:0,hasAxe:false,scene:'island',seaProg:0,seaInv:0,seaWon:false,coco:0,euVisited:0,euWon:false,euSeen:{},parts:0,planets:0,planetsSeen:{},spaceWon:false,hasSword:false,snakesKilled:0,saWon:false,matchYou:0,matchEng:0,saDone:{},roos:0};
 const keys={};
 const SEA={w:1600,startX:800,startY:3500,shoreY:320};
 const sharks=[],seaFish=[],wakes=[],seaCoco=[];
@@ -470,7 +471,7 @@ ASIA_CFG.parts=[               // деталі розкидані в ГОРАХ 
 ASIA_CFG.rocketPad={x:2360,y:1075}; // ракета біля Японії
 // ---- Південна Америка (частина 6) ----
 const SA_CFG={w:2000,h:2800,startX:1150,startY:640,ship:{x:1150,y:180},id:'sa',tasks:true,dispName:'Південна Америка'};
-const NA_CFG={w:2700,h:2500,startX:1200,startY:1450,ship:{x:1200,y:2400},id:'na',tasks:true,dispName:'Північна Америка'};
+const NA_CFG={w:2700,h:2500,startX:1200,startY:1450,ship:{x:1200,y:2400},id:'na',tasks:true,dispName:'Північна Америка',mini:'Півн.Америка 🌎'};
 const SA_COUNTRIES=[
   {id:'br',name:'Бразилія', cx:1150,cy:820, rx:430,ry:470,tint:'#6fb257',fact:'Бразилія — Амазонка, карнавал і футбол ⚽. Тут — меч і 15 змій! 🐍',snakes:true},
   {id:'ve',name:'Венесуела',cx:820, cy:360, rx:200,ry:180,tint:'#7ab85f',fact:'Венесуела — найвищий водоспад Анхель 💧',q:'Ти б стрибнув з найвищого водоспаду світу на парашуті?'},
@@ -498,7 +499,7 @@ const NA_COUNTRIES=[
 const NA_BRIDGES=[{cx:1880,cy:520,rx:135,ry:120},{cx:1400,cy:2085,rx:155,ry:110}]; // Канада↔Ґренландія, Мексика↔Куба
 // ---- Антарктида (частина 8): крижаний континент, який ділять країни-претенденти ----
 // 8 ділянок-претензій великими колами навколо Південного полюса (1200,1200): нахляпуються → один суцільний прохідний диск, а countryAt (найближчий центр) ріже його на «шматки-претензії».
-const AN_CFG={w:2400,h:2400,startX:1200,startY:1500,ship:{x:1200,y:2090},id:'an',tasks:true,dispName:'Антарктида'};
+const AN_CFG={w:2400,h:2400,startX:1200,startY:1500,ship:{x:1200,y:2090},id:'an',tasks:true,dispName:'Антарктида',mini:'Антарктида ❄️'};
 const AN_COUNTRIES=[
   {id:'uk',name:'Британія',    cx:1200,cy:820, rx:430,ry:430,tint:'#dfe9f2',fact:'Британія має свою ділянку Антарктиди 🇬🇧🧊',q:'Ти б хотів побачити айсберг більший за будинок? 🧊'},
   {id:'no',name:'Норвегія',    cx:1469,cy:931, rx:430,ry:430,tint:'#e8f1f8',fact:'Норвежець Амундсен перший дійшов до Південного полюса 🚩',q:'Ти б хотів бути першим, хто кудись дійшов? 🚩'},
@@ -510,6 +511,38 @@ const AN_COUNTRIES=[
   {id:'af',name:'Афр. Союз',   cx:931, cy:931, rx:430,ry:430,tint:'#e8f1f8',fact:'Африканський Союз теж хотів би шматочок криги ❄️',q:'В Африці спека, а тут мороз. Проміняв би спеку на сніг? ⛄'},
 ];
 const AN_BRIDGES=[]; // не потрібні — усі ділянки перекриваються
+// ---- Океанія (частина 9): за мапою Кості «Прапори країн Океанії» — острови розфарбовані прапорами, між ними дерев'яні містки ----
+// parts — ще шматки суші тієї ж країни (Кейп-Йорк, Тасманія, Південний острів); rot — поворот еліпса; fr — куди лягає прапор-земля (центр, розмір, поворот).
+const OC_CFG={w:3200,h:2300,startX:1330,startY:1330,ship:{x:1600,y:1250},id:'oc',tasks:true,flagLand:true,dispName:'Океанія',mini:'Океанія 🦘'};
+const OC_COUNTRIES=[
+  {id:'au',name:'Австралія',cx:900,cy:1180,rx:620,ry:400,tint:'#012169',fr:{cx:910,cy:1100,w:1260,h:1000},
+    parts:[{cx:960,cy:800,rx:210,ry:120},{cx:620,cy:900,rx:170,ry:110},{cx:1390,cy:800,rx:80,ry:260},{cx:1300,cy:1450,rx:240,ry:170},{cx:1210,cy:1800,rx:80,ry:75}],
+    fact:'Австралія — кенгуру 🦘, коали 🐨, червона скеля Улуру і Сіднейська опера 🎭',roos:true},
+  {id:'pg',name:'Папуа Нова Гвінея',cx:1560,cy:330,rx:330,ry:120,tint:'#000000',fact:'Папуа Нова Гвінея — райські птахи 🦜 і хатинки на палях',q:'Ти б пожив у хатинці на палях посеред джунглів? 🛖'},
+  {id:'sb',name:'Соломонові Острови',cx:2130,cy:470,rx:160,ry:75,tint:'#0051BA',fact:'Соломонові Острови — майже тисяча островів 🏝️ і корали',q:'Ти б поплавав у масці біля коралових рифів? 🐠'},
+  {id:'vu',name:'Вануату',cx:2330,cy:820,rx:70,ry:150,tint:'#D21034',fact:'Вануату — тут є вулкан, до якого можна підійти зовсім близько 🌋',q:'Ти б зазирнув у справжній вулкан? 🌋'},
+  {id:'nc',name:'Нова Каледонія',cx:2080,cy:1100,rx:150,ry:55,rot:0.55,tint:'#0055A4',fact:'Нова Каледонія — острів Франції 🇫🇷 з величезною лагуною і черепахами 🐢',q:'Ти б поплавав поруч із морською черепахою? 🐢'},
+  {id:'fj',name:'Фіджі',cx:2700,cy:850,rx:120,ry:75,tint:'#68BFE5',fact:'Фіджі — понад 300 островів, пальми і пляжі 🏖️',q:'Ти б хотів жити там, де завжди літо? ☀️'},
+  {id:'ws',name:'Самоа',cx:2980,cy:560,rx:110,ry:55,tint:'#CE1126',fact:'Самоа — тут Новий рік зустрічають одними з перших у світі 🎆',q:'Ти б хотів зустріти Новий рік раніше за всіх? 🎆'},
+  {id:'to',name:'Тонга',cx:2950,cy:1120,rx:60,ry:100,tint:'#C10000',fact:'Тонга — королівство на островах 👑, а біля берега пливуть кити 🐋',q:'Ти б поплавав поруч із китом? 🐋'},
+  {id:'nz',name:'Нова Зеландія',cx:2160,cy:1660,rx:105,ry:165,tint:'#012169',fr:{cx:1990,cy:1790,w:760,h:340,rot:-0.93},
+    parts:[{cx:1930,cy:1935,rx:250,ry:95,rot:-0.6}],
+    fact:'Нова Зеландія — пташка ківі 🥝, гори і вулкани',q:'Ти б хотів побачити пташку ківі, яка не вміє літати? 🥝'},
+];
+const OC_BRIDGES=[ // дерев'яні містки: відрізок (x1,y1)→(x2,y2) шириною w
+  {x1:1220,y1:1600,x2:1210,y2:1745,w:56},   // Австралія ↔ Тасманія
+  {x1:1390,y1:575, x2:1400,y2:420, w:56},   // Кейп-Йорк ↔ Папуа Нова Гвінея
+  {x1:1860,y1:335, x2:2000,y2:460, w:56},   // Папуа ↔ Соломонові
+  {x1:2200,y1:515, x2:2320,y2:690, w:56},   // Соломонові ↔ Вануату
+  {x1:2320,y1:940, x2:2170,y2:1150,w:56},   // Вануату ↔ Нова Каледонія
+  {x1:2380,y1:820, x2:2600,y2:845, w:56},   // Вануату ↔ Фіджі
+  {x1:2780,y1:800, x2:2900,y2:590, w:56},   // Фіджі ↔ Самоа
+  {x1:2780,y1:900, x2:2935,y2:1040,w:56},   // Фіджі ↔ Тонга
+  {x1:2190,y1:1165,x2:2165,y2:1510,w:56},   // Нова Каледонія ↔ Нова Зеландія
+  {x1:1520,y1:1460,x2:2075,y2:1640,w:56},   // Тасманів міст: Австралія ↔ Нова Зеландія
+];
+OC_CFG.roos=[[520,1150],[900,880],[1120,1270],[700,1420],[1260,1500],[1390,880]].map(([x,y],i)=>({hx:x,hy:y,x,y,ph:i*1.3,t:0,vx:1,found:false})); // 6 кенгуру в Австралії
+OC_CFG.deco=[{kind:'opera',x:1440,y:1430},{kind:'koala',x:1160,y:1060}];
 let COUNTRIES=EUROPE_COUNTRIES;   // активний список країн
 let BRIDGES=EUROPE_BRIDGES;       // активні містки
 let freeCam=false;const focus={x:0,y:0};
@@ -562,11 +595,11 @@ function updateUI(){
     const tm=Math.floor(st.time);if(ui.time!==tm){ui.time=tm;timeLbl.textContent=fmtTime(tm);}
     const asia=EUR.id==='asia',sa=EUR.tasks;
     const q=sa?saQuestInfo():null;
-    const qk=sa?('sa'+q.done+'|'+(EUR.snakes?st.snakesKilled:0)):asia?('as'+st.parts+'|'+st.euVisited):('eu'+st.euVisited);
+    const qk=sa?('sa'+q.done+'|'+(EUR.snakes?st.snakesKilled:0)+'|'+(EUR.roos?st.roos:0)):asia?('as'+st.parts+'|'+st.euVisited):('eu'+st.euVisited);
     if(ui.quest!==qk){ui.quest=qk;
       stepsEl.innerHTML='<div class="step cur"><span class="k">'+(sa?'📋':asia?'🚀':'🗺️')+'</span><span>'+(sa?'Виконай завдання всіх країн':asia?'Знайди всі країни, тоді Японія 🍣':'Обійди всю Європу')+'</span></div>';
-      questHint.innerHTML=sa?(`Завдання: <b>${q.done}/${q.total}</b> ✅`+(EUR.snakes?` · змії ${st.snakesKilled}/${EUR.snakes.length} 🐍`:'')):asia?`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🌏 · деталі ${st.parts}/4 🔧`:`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
-    let h=st.toastT>0?st.toastMsg:(sa?((EUR.snakes&&!st.hasSword)?'Знайди меч ⚔️ у Бразилії, тоді завдання країн':'Тапай країни й виконуй їхні завдання ✅'):asia?'Знайди всі країни Азії; у Японії тапни гори 🏔️ по деталі':'Гуляй Європою! Тапни країну — дізнаєшся про неї');
+      questHint.innerHTML=sa?(`Завдання: <b>${q.done}/${q.total}</b> ✅`+(EUR.snakes?` · змії ${st.snakesKilled}/${EUR.snakes.length} 🐍`:'')+(EUR.roos?` · кенгуру ${st.roos}/${EUR.roos.length} 🦘`:'')):asia?`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🌏 · деталі ${st.parts}/4 🔧`:`Країни: <b>${st.euVisited}/${COUNTRIES.length}</b> 🏳️`;}
+    let h=st.toastT>0?st.toastMsg:(sa?((EUR.snakes&&!st.hasSword)?'Знайди меч ⚔️ у Бразилії, тоді завдання країн':(EUR.roos&&st.roos<EUR.roos.length)?'Шукай кенгуру 🦘 в Австралії — просто підійди до них':EUR.id==='oc'?'Іди містками 🌉 на острови і тапай країни ✅':'Тапай країни й виконуй їхні завдання ✅'):asia?'Знайди всі країни Азії; у Японії тапни гори 🏔️ по деталі':'Гуляй Європою! Тапни країну — дізнаєшся про неї');
     if(ui.hint!==h){ui.hint=h;hintEl.innerHTML=h;hintEl.classList.toggle('toast',st.toastT>0);}
     return;
   }
@@ -853,7 +886,7 @@ function layoutHud(){const isl=st.scene==='island';
   $('food').hidden=!isl;$('thirst').hidden=!isl;$('inv').hidden=!isl;
   const lb=$('listBtn');if(lb)lb.hidden=!(st.scene==='europe'||st.scene==='space');
   const ab=$('airportBtn');if(ab)ab.hidden=false;
-  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?(EUR.id==='asia'?'Азія 🌏':EUR.id==='sa'?'Пд.Америка 🌎':'Європа 🗺️'):st.scene==='inside'?'Усередині 🚪':st.scene==='space'?'Космос 🚀':st.scene==='match'?'⚽ Матч':st.scene==='mountains'?'🏔️ Гори':'Мапа острова';}
+  const lbl=$('mini').querySelector('small');if(lbl)lbl.textContent=st.scene==='sea'?'До Франції 🗼':st.scene==='europe'?(EUR.mini||(EUR.id==='asia'?'Азія 🌏':EUR.id==='sa'?'Пд.Америка 🌎':'Європа 🗺️')):st.scene==='inside'?'Усередині 🚪':st.scene==='space'?'Космос 🚀':st.scene==='match'?'⚽ Матч':st.scene==='mountains'?'🏔️ Гори':'Мапа острова';}
 function startSea(){
   st.scene='sea';st.running=true;st.over=false;st.won=true;st.seaWon=false;st.seaProg=0;st.seaInv=1.2;st.time=0;st.toastT=0;
   player.x=SEA.startX;player.y=SEA.startY;player.dir='up';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
@@ -1037,14 +1070,17 @@ function drawSeaMini(){
 // =============================================================================
 
 // ================= ЧАСТИНА 3: ЄВРОПА (за ідеєю Кості) =================
-function inEll(x,y,c){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry;return dx*dx+dy*dy<=1;}
-function europeLand(x,y){for(const c of COUNTRIES)if(inEll(x,y,c))return true;for(const b of BRIDGES)if(inEll(x,y,b))return true;return false;}
+function ellD(x,y,e){let dx=x-e.cx,dy=y-e.cy;if(e.rot){const co=Math.cos(e.rot),si=Math.sin(e.rot),ux=dx*co+dy*si;dy=dy*co-dx*si;dx=ux;}dx/=e.rx;dy/=e.ry;return dx*dx+dy*dy;} // нормована відстань до еліпса (≤1 — всередині), з поворотом
+function countryD(x,y,c){let d=ellD(x,y,c);if(c.parts)for(const p of c.parts)d=Math.min(d,ellD(x,y,p));return d;} // країна = головний еліпс + parts
+function inEll(x,y,c){return ellD(x,y,c)<=1;}
+function inBridge(x,y,b){if(b.x1==null)return inEll(x,y,b);const vx=b.x2-b.x1,vy=b.y2-b.y1,t=clamp(((x-b.x1)*vx+(y-b.y1)*vy)/(vx*vx+vy*vy),0,1);return Math.hypot(x-b.x1-vx*t,y-b.y1-vy*t)<=b.w/2;} // місток-відрізок
+function europeLand(x,y){for(const c of COUNTRIES)if(countryD(x,y,c)<=1)return true;for(const b of BRIDGES)if(inBridge(x,y,b))return true;return false;}
 function canStandEU(x,y){return europeLand(x-7,y+4)&&europeLand(x+7,y+4)&&europeLand(x,y-2);}
-function countryAt(x,y){let best=null,bd=Infinity;for(const c of COUNTRIES){const dx=(x-c.cx)/c.rx,dy=(y-c.cy)/c.ry,d=dx*dx+dy*dy;if(d<=1&&d<bd){bd=d;best=c;}}return best;}
+function countryAt(x,y){let best=null,bd=Infinity;for(const c of COUNTRIES){const d=countryD(x,y,c);if(d<=1&&d<bd){bd=d;best=c;}}return best;}
 const EMOJI={fr:'🗼',it:'🍕',es:'🐂',de:'🥨',uk:'🕰️',nl:'🌷',gr:'🏛️',ua:'🌻',pl:'🏰',dk:'🧱',no:'⛵',se:'🐴',fi:'❄️',ee:'🏰',lv:'🌲',lt:'🏯',by:'🕊️',ro:'🦇',md:'🍇',bg:'🌹',tr:'🕌',pt:'🐓',lo:'🐻',be:'🧇',lu:'🏰',ru:'🌲',kz:'⛺',mn:'🐎',cn:'🐼',in:'🐘',kr:'🍜',jp:'🍣',
   uz:'🕌',tm:'🔥',tj:'⛰️',kg:'⛺',pk:'🕌',np:'🏔️',bd:'🐯',lk:'🐘',mm:'✨',th:'🐘',la:'🛕',kh:'🛕',vn:'🌾',my:'🌴',sg:'🦁',id:'🌋',ph:'🏝️',
   br:'⚽',ve:'💧',co:'☕',ec:'🌍',pe:'🦙',bo:'✨',py:'🌳',ch:'⛰️',uy:'🏖️',ar:'💃',
-  gl:'🧊',ca:'🍁',us:'🗽',mx:'🌯',gt:'🗿',cu:'🎵',au:'🦘',nz:'🥝',af:'🌍'};
+  gl:'🧊',ca:'🍁',us:'🗽',mx:'🌯',gt:'🗿',cu:'🎵',au:'🦘',nz:'🥝',af:'🌍',pg:'🦜',sb:'🐠',vu:'🌋',nc:'🐢',fj:'🏖️',ws:'🎆',to:'🐋'};
 const IN={w:760,h:560,wall:26,doorW:100};
 function openInside(c){st.insideCountry=c;st.euReturn={x:player.x,y:player.y};st.scene='inside';
   player.x=IN.w/2;player.y=IN.h-IN.wall-28;player.dir='up';player.moving=false;player.mtx=player.mty=null;
@@ -1133,7 +1169,7 @@ function goToStart(){st.running=false;st.over=false;st.scene='island';const ins=
 function openChecklist(){
   let items,title;
   if(st.scene==='space'){title='🪐 Планети';items=PLANETS.filter(p=>!p.sun).map(p=>({name:p.name,emoji:'🪐',done:!!st.planetsSeen[p.id]}));}
-  else{const asia=EUR.id==='asia';title=asia?'🌏 Країни Азії':'🗺️ Країни Європи';items=COUNTRIES.map(c=>({name:c.name,emoji:EMOJI[c.id]||'🏳️',done:!!st.euSeen[c.id]}));}
+  else{const asia=EUR.id==='asia';title=asia?'🌏 Країни Азії':EUR.dispName?'🗺️ Країни: '+EUR.dispName:'🗺️ Країни Європи';items=COUNTRIES.map(c=>({name:c.name,emoji:EMOJI[c.id]||'🏳️',done:!!st.euSeen[c.id]}));}
   $('checklistTitle').textContent=title;
   const done=items.filter(i=>i.done).length;
   $('checklistBody').innerHTML=items.map(i=>`<div class="clrow ${i.done?'done':'todo'}">${i.done?'✅':'⬜'} ${i.emoji} ${i.name}</div>`).join('');
@@ -1189,15 +1225,27 @@ function startAntarctica(){
   $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('saWin').hidden=true;$('menu').hidden=true;const rk=$('rocket');if(rk)rk.hidden=true;
   toast('Ти в Антарктиді! ❄️🐧 Цей крижаний край ділять багато країн. Обійди всі ділянки і виконай завдання!',4.8);
 }
+function startOceania(){
+  EUR=OC_CFG;COUNTRIES=OC_COUNTRIES;BRIDGES=OC_BRIDGES;
+  st.scene='europe';st.running=true;st.over=false;st.won=true;st.cloth=NEED_CLOTH;st.time=0;st.toastT=0;st.euWon=false;st.euSeen={};st.saWon=false;st.saDone={};st.roos=0;
+  for(const r of OC_CFG.roos)r.found=false;
+  st.euSeen['au']=true;st.euVisited=1; // старт в Австралії
+  player.x=EUR.startX;player.y=EUR.startY;player.dir='down';player.moving=false;player.mtx=player.mty=null;player.hurt=0;player.anim=0;
+  freeCam=false;focus.x=player.x;focus.y=player.y;floats.length=0;
+  ui.quest='';ui.hint='';ui.time=-1;layoutHud();
+  $('start').hidden=true;$('win').hidden=true;$('dead').hidden=true;$('france').hidden=true;$('europeWin').hidden=true;$('saWin').hidden=true;$('menu').hidden=true;const rk=$('rocket');if(rk)rk.hidden=true;
+  toast('Ти в Океанії, в Австралії! 🦘 Знайди 6 кенгуру, а потім іди дерев’яними містками на острови 🏝️',5);
+}
 function europeWin(){if(st.euWon)return;st.euWon=true;sfx('win');$('euTime').textContent=fmtTime(st.time);setTimeout(()=>{if(st.scene==='europe'&&st.euWon){st.running=false;$('europeWin').hidden=false;}},1300);}
 function saWin(){if(st.saWon)return;st.saWon=true;sfx('win');const nm=EUR.dispName||'континент';$('saWinEyebrow').textContent=nm+' пройдено 🎉';$('saWinP').textContent='Ти виконав завдання всіх країн: '+nm+'!';$('saTime').textContent=fmtTime(st.time);
   const nb=$('saNextBtn'),rid=EUR.id;
   if(rid==='sa'){nb.textContent='Далі: Північна Америка 🌎';nb.onclick=()=>{$('saWin').hidden=true;startNA();};}
   else if(rid==='na'){nb.textContent='Летимо в Антарктиду ✈️❄️';nb.onclick=()=>{$('saWin').hidden=true;startAntarctica();};}
-  else if(rid==='an'){nb.textContent='Ти пройшов усю Землю! 🏆 Почати спочатку 🔄';nb.onclick=()=>{$('saWin').hidden=true;startGame();};}
+  else if(rid==='an'){nb.textContent='Далі: Океанія 🦘🏝️';nb.onclick=()=>{$('saWin').hidden=true;startOceania();};}
+  else if(rid==='oc'){nb.textContent='Ти пройшов усю Землю! 🏆 Почати спочатку 🔄';nb.onclick=()=>{$('saWin').hidden=true;startGame();};}
   else{nb.textContent='Переродження 🔄 (спочатку)';nb.onclick=()=>{$('saWin').hidden=true;startGame();};}
   setTimeout(()=>{if(st.scene==='europe'&&st.saWon){st.running=false;$('saWin').hidden=false;}},1200);}
-function saQuestInfo(){const qs=COUNTRIES.filter(c=>c.match||c.q||c.snakes||c.cook||c.translate||c.plane);let done=0;for(const c of qs)if(st.saDone[c.id])done++;return{done,total:qs.length};}
+function saQuestInfo(){const qs=COUNTRIES.filter(c=>c.match||c.q||c.snakes||c.cook||c.translate||c.plane||c.roos);let done=0;for(const c of qs)if(st.saDone[c.id])done++;return{done,total:qs.length};}
 function checkSaWin(){if(!EUR.tasks||st.saWon)return;const q=saQuestInfo();if(q.total>0&&q.done>=q.total)saWin();}
 function updateEurope(dt){
   let dx=0,dy=0;
@@ -1226,6 +1274,12 @@ function updateEurope(dt){
       else if(!st.hasSword&&d<18){const a=Math.atan2(player.y-s.y,player.x-s.x);player.x+=Math.cos(a)*22;player.y+=Math.sin(a)*22;player.mtx=player.mty=null;toast('Змія! 🐍 Спершу знайди меч ⚔️',1.6);}
     }
   }
+  if(EUR.roos){ // кенгуру стрибають біля своїх місць; підійшов — знайшов
+    for(const r of EUR.roos){r.t+=dt;const px=r.x;r.x=r.hx+Math.sin(r.t*0.45+r.ph)*55;r.y=r.hy+Math.cos(r.t*0.33+r.ph*1.7)*30;r.vx=r.x-px;
+      if(!r.found&&Math.hypot(player.x-r.x,player.y-r.y)<32){r.found=true;st.roos++;sfx('craft');floats.push({x:r.x,y:r.y-50,s:'🦘 +1',t:0});
+        if(st.roos>=EUR.roos.length&&!st.saDone['au']){st.saDone['au']=true;toast('Завдання Австралії ✅ Ти знайшов усіх кенгуру! 🦘',3.6);checkSaWin();}
+        else toast('Кенгуру '+st.roos+'/'+EUR.roos.length+' 🦘 Шукай ще!',2);}}
+  }
   for(let i=floats.length-1;i>=0;i--){floats[i].t+=dt;if(floats[i].t>1.4)floats.splice(i,1);}
 }
 function drawEurope(now){
@@ -1237,24 +1291,29 @@ function drawEurope(now){
   const gs=46,gx0=Math.floor((cam.x-40)/gs)*gs,gy0=Math.floor((cam.y-40)/gs)*gs;
   ctx.fillStyle='rgba(255,255,255,.08)';
   for(let gy=gy0;gy<cam.y+vhz+40;gy+=gs)for(let gx=gx0;gx<cam.x+vwz+40;gx+=gs){const ci=Math.floor(gx/gs),ri=Math.floor(gy/gs),ph=(ci*3+ri*5+Math.floor(tsec*2))%5;ctx.fillRect(gx+5+ph*3,gy+13,10,2);}
-  for(const b of BRIDGES){ctx.fillStyle='#6fb257';ctx.beginPath();ctx.ellipse(b.cx,b.cy,b.rx,b.ry,0,0,Math.PI*2);ctx.fill();}
-  const ice=EUR.id==='an';
-  for(const c of COUNTRIES){ctx.fillStyle=ice?'#cfe0ee':'#e8d59a';ctx.beginPath();ctx.ellipse(c.cx,c.cy,c.rx+9,c.ry+9,0,0,Math.PI*2);ctx.fill();}
-  for(const c of COUNTRIES){ctx.fillStyle=c.tint;ctx.beginPath();ctx.ellipse(c.cx,c.cy,c.rx,c.ry,0,0,Math.PI*2);ctx.fill();}
+  for(const b of BRIDGES){if(b.x1!=null){drawPlankBridge(b);continue;}ctx.fillStyle='#6fb257';ctx.beginPath();ctx.ellipse(b.cx,b.cy,b.rx,b.ry,0,0,Math.PI*2);ctx.fill();}
+  const ice=EUR.id==='an',shapes=c=>c.parts?[c,...c.parts]:[c];
+  for(const c of COUNTRIES)for(const e of shapes(c)){ctx.fillStyle=ice?'#cfe0ee':'#e8d59a';ctx.beginPath();ctx.ellipse(e.cx,e.cy,e.rx+9,e.ry+9,e.rot||0,0,Math.PI*2);ctx.fill();}
+  if(EUR.flagLand){for(const c of COUNTRIES)drawFlagLand(c);}
+  else{
+  for(const c of COUNTRIES)for(const e of shapes(c)){ctx.fillStyle=c.tint;ctx.beginPath();ctx.ellipse(e.cx,e.cy,e.rx,e.ry,e.rot||0,0,Math.PI*2);ctx.fill();}
   ctx.fillStyle=ice?'rgba(255,255,255,.85)':'rgba(70,150,50,.5)';
   for(const c of COUNTRIES){for(let k=0;k<44;k++){const a=k*2.399,r=Math.sqrt((k+1)/44);const gx=c.cx+Math.cos(a)*c.rx*r*0.92,gy=c.cy+Math.sin(a)*c.ry*r*0.92;if(ice)ctx.fillRect(gx,gy,3,3);else ctx.fillRect(gx,gy,2,4);}}
+  }
   if(marker.t<0.6){const a=1-marker.t/0.6,rr=8+marker.t*30;ctx.strokeStyle=`rgba(245,236,214,${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,rr,0,Math.PI*2);ctx.stroke();}
   const ents=[],iv=(x,y)=>x>cam.x-140&&x<cam.x+vwz+140&&y>cam.y-170&&y<cam.y+vhz+140;
   for(const c of COUNTRIES)if(iv(c.cx,c.cy))ents.push({y:c.cy,f:()=>drawLandmark(c,tsec)});
   if(EUR.rocketPad&&iv(EUR.rocketPad.x,EUR.rocketPad.y))ents.push({y:EUR.rocketPad.y,f:()=>drawRocketPad(tsec)});
   if(EUR.sword&&!EUR.sword.taken&&iv(EUR.sword.x,EUR.sword.y))ents.push({y:EUR.sword.y,f:()=>drawSword(tsec)});
   if(EUR.snakes)for(const s of EUR.snakes)if(!s.dead&&iv(s.x,s.y))ents.push({y:s.y,f:()=>drawSnake(s,tsec)});
+  if(EUR.deco)for(const d of EUR.deco)if(iv(d.x,d.y))ents.push({y:d.y,f:()=>drawOcDeco(d,tsec)});
+  if(EUR.roos)for(const r of EUR.roos)if(iv(r.x,r.y))ents.push({y:r.y,f:()=>drawRoo(r,tsec)});
   if(EUR.portal&&iv(EUR.portal.x,EUR.portal.y))ents.push({y:EUR.portal.y,f:()=>drawPortal(tsec)});
   if(iv(EUR.ship.x,EUR.ship.y))ents.push({y:EUR.ship.y,f:()=>drawShipEU()});
   ents.push({y:player.y,f:()=>drawPlayer(tsec)});
   ents.sort((a,b)=>a.y-b.y);for(const e of ents)e.f();
   for(const c of COUNTRIES){if(!iv(c.cx,c.cy))continue;const ly=c.cy-c.ry+4;drawFlag(c.cx,ly,c.id);
-    ctx.font='700 15px Rubik, sans-serif';ctx.textAlign='center';ctx.fillStyle='#0f1c2a';ctx.fillText(c.name,c.cx+1,ly+36+1);ctx.fillStyle=st.euSeen[c.id]?'#bff0a8':'#fff';ctx.fillText(c.name,c.cx,ly+36);}
+    ctx.font='700 15px Rubik, sans-serif';ctx.textAlign='center';if(EUR.flagLand){ctx.strokeStyle='#0f1c2a';ctx.lineWidth=4;ctx.lineJoin='round';ctx.strokeText(c.name,c.cx,ly+36);}ctx.fillStyle='#0f1c2a';ctx.fillText(c.name,c.cx+1,ly+36+1);ctx.fillStyle=st.euSeen[c.id]?'#bff0a8':'#fff';ctx.fillText(c.name,c.cx,ly+36);}
   ctx.font='700 12px Rubik, sans-serif';ctx.textAlign='center';
   for(const f of floats){if(f.t<0)continue;const a=1-Math.max(0,f.t-.8)/.6;ctx.globalAlpha=a;ctx.fillStyle='#0f1c2a';ctx.fillText(f.s,f.x+1,f.y-f.t*26+1);ctx.fillStyle='#f5ecd6';ctx.fillText(f.s,f.x,f.y-f.t*26);}
   ctx.globalAlpha=1;
@@ -1329,13 +1388,7 @@ function drawFlag(x,y,id){const w=30,h=20,lx=x-w/2;
     case 'mx':Vb('#006847','#fff','#CE1126');ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,2.5,0,Math.PI*2);ctx.fill();break;
     case 'gt':Vb('#4997D0','#fff','#4997D0');ctx.fillStyle='#5a7d3a';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,2.5,0,Math.PI*2);ctx.fill();break;
     case 'cu':for(let i=0;i<5;i++){ctx.fillStyle=i%2?'#fff':'#002A8F';ctx.fillRect(lx,y+i*(h/5),w,h/5);}ctx.fillStyle='#CF142B';ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx+w*0.44,y+h/2);ctx.lineTo(lx,y+h);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.font='700 8px Rubik';ctx.textAlign='center';ctx.fillText('★',lx+w*0.13,y+h/2+3);break;
-    case 'au':case 'nz':{ctx.fillStyle='#00247D';ctx.fillRect(lx,y,w,h);
-      ctx.fillStyle='#012169';ctx.fillRect(lx,y,w*0.5,h*0.5);
-      ctx.fillStyle='#fff';ctx.fillRect(lx+w*0.24-2,y,4,h*0.5);ctx.fillRect(lx,y+h*0.25-2,w*0.5,4);
-      ctx.fillStyle='#C8102E';ctx.fillRect(lx+w*0.24-1,y,2,h*0.5);ctx.fillRect(lx,y+h*0.25-1,w*0.5,2);
-      ctx.fillStyle=id==='nz'?'#C8102E':'#fff';ctx.font='700 9px Rubik';ctx.textAlign='center';
-      ctx.fillText('★',lx+w*0.7,y+h*0.44);ctx.fillText('★',lx+w*0.83,y+h*0.68);ctx.fillText('★',lx+w*0.66,y+h*0.8);
-      if(id==='au'){ctx.fillStyle='#fff';ctx.fillText('★',lx+w*0.22,y+h*0.86);}break;}
+    case 'au':case 'nz':case 'pg':case 'sb':case 'vu':case 'nc':case 'fj':case 'ws':case 'to':paintFlag(id,lx,y,w,h);break;
     case 'af':ctx.fillStyle='#0a7d3b';ctx.fillRect(lx,y,w,h);ctx.fillStyle='#f6c700';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#0a7d3b';ctx.beginPath();ctx.arc(lx+w/2,y+h/2,2.6,0,Math.PI*2);ctx.fill();break;
     default:ctx.fillStyle='#ccc';ctx.fillRect(lx,y,w,h);
   }
@@ -1351,8 +1404,131 @@ function antScenery(c,x,y,tsec){shadow(x,y,22);
   ctx.fillStyle='#000';ctx.beginPath();ctx.arc(x-3,y-43+bob,.9,0,Math.PI*2);ctx.arc(x+3,y-43+bob,.9,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#f6a417';ctx.beginPath();ctx.moveTo(x-3,y-39+bob);ctx.lineTo(x+3,y-39+bob);ctx.lineTo(x,y-35+bob);ctx.closePath();ctx.fill(); // дзьоб
   ctx.fillStyle='#f6a417';ctx.fillRect(x-5,y-8+bob,3,4);ctx.fillRect(x+2,y-8+bob,3,4);}               // лапки
+// ---- Океанія: прапори (будь-якого розміру — і значок, і земля острова), містки, пам'ятки, кенгуру ----
+function ocDot(x,y,r){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+function ocStar(x,y,r,n,ri){ctx.beginPath();for(let i=0;i<n*2;i++){const a=-Math.PI/2+i*Math.PI/n,rr=i%2?r*ri:r;ctx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}ctx.closePath();ctx.fill();}
+function unionJack(x,y,w,h){const u=h/30;ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+  ctx.fillStyle='#012169';ctx.fillRect(x,y,w,h);ctx.lineCap='butt';
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y+h);ctx.moveTo(x+w,y);ctx.lineTo(x,y+h);
+  ctx.strokeStyle='#fff';ctx.lineWidth=6*u;ctx.stroke();ctx.strokeStyle='#C8102E';ctx.lineWidth=2*u;ctx.stroke();
+  ctx.fillStyle='#fff';ctx.fillRect(x+w/2-5*u,y,10*u,h);ctx.fillRect(x,y+h/2-5*u,w,10*u);
+  ctx.fillStyle='#C8102E';ctx.fillRect(x+w/2-3*u,y,6*u,h);ctx.fillRect(x,y+h/2-3*u,w,6*u);ctx.restore();}
+function ocBird(x,y,s){ctx.save();ctx.translate(x,y);ctx.rotate(-.45);ctx.beginPath();ctx.ellipse(0,0,s*.26,s*.1,0,0,Math.PI*2);ctx.fill();ocDot(s*.28,-s*.04,s*.07);
+  ctx.strokeStyle=ctx.fillStyle;ctx.lineCap='round';ctx.lineWidth=Math.max(.8,s*.035);ctx.beginPath();
+  for(let i=0;i<4;i++){ctx.moveTo(-s*.18,s*.02);ctx.quadraticCurveTo(-s*(.45+i*.06),-s*(.3-i*.15),-s*(.7+i*.04),s*(.05+i*.1));}ctx.stroke();ctx.restore();}
+function paintFlag(id,x,y,w,h){const S=Math.min(w/2,h),X=f=>x+w*f,Y=f=>y+h*f;
+  ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+  switch(id){
+    case 'au':ctx.fillStyle='#012169';ctx.fillRect(x,y,w,h);unionJack(x,y,w/2,h/2);ctx.fillStyle='#fff';
+      ocStar(X(.25),Y(.75),S*.15,7,.47); // зірка Співдружності
+      for(const[a,b]of[[.75,.86],[.625,.48],[.75,.16],[.87,.41]])ocStar(X(a),Y(b),S*.075,7,.47); // Південний Хрест
+      ocStar(X(.80),Y(.58),S*.04,5,.45);break;
+    case 'nz':ctx.fillStyle='#012169';ctx.fillRect(x,y,w,h);unionJack(x,y,w/2,h/2);
+      for(const[a,b,r]of[[.75,.80,.075],[.63,.45,.065],[.75,.20,.065],[.87,.40,.058]]){ctx.fillStyle='#fff';ocStar(X(a),Y(b),S*r*1.3,5,.4);ctx.fillStyle='#C8102E';ocStar(X(a),Y(b),S*r,5,.4);}break;
+    case 'pg':ctx.fillStyle='#000';ctx.fillRect(x,y,w,h);ctx.fillStyle='#CE1126';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w,y+h);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#fff';for(const[a,b,r]of[[.25,.42,.07],[.15,.60,.06],[.35,.60,.06],[.25,.80,.07],[.29,.68,.035]])ocStar(X(a),Y(b),S*r,5,.42);
+      ctx.fillStyle='#FCD116';ocBird(X(.68),Y(.30),S*.5);break;
+    case 'sb':ctx.fillStyle='#0051BA';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.lineTo(x,y+h);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#215B33';ctx.beginPath();ctx.moveTo(x+w,y);ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='#FCD116';ctx.lineWidth=h*.1;ctx.beginPath();ctx.moveTo(x,y+h);ctx.lineTo(x+w,y);ctx.stroke();
+      ctx.fillStyle='#fff';for(const[a,b]of[[.09,.14],[.27,.14],[.18,.27],[.09,.40],[.27,.40]])ocStar(X(a),Y(b),S*.07,5,.42);break;
+    case 'vu':{ctx.fillStyle='#D21034';ctx.fillRect(x,y,w,h/2);ctx.fillStyle='#009543';ctx.fillRect(x,y+h/2,w,h/2);
+      const tx=X(.42),ty=Y(.5);ctx.fillStyle='#000';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(tx,ty);ctx.lineTo(x,y+h);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(tx,ty);ctx.lineTo(x+w,ty);ctx.moveTo(x,y+h);ctx.lineTo(tx,ty);ctx.lineJoin='miter';ctx.lineCap='butt';
+      ctx.strokeStyle='#000';ctx.lineWidth=h*.2;ctx.stroke();ctx.strokeStyle='#FDCE12';ctx.lineWidth=h*.1;ctx.stroke();
+      ctx.lineWidth=Math.max(1,h*.04);ctx.beginPath();ctx.arc(X(.12),ty,h*.1,-Math.PI*.8,Math.PI*.8);ctx.stroke();break;}
+    case 'nc':ctx.fillStyle='#0055A4';ctx.fillRect(x,y,w/3,h);ctx.fillStyle='#fff';ctx.fillRect(x+w/3,y,w/3,h);ctx.fillStyle='#EF4135';ctx.fillRect(x+2*w/3,y,w/3+1,h);break; // як на мапі Кості — прапор Франції
+    case 'fj':{ctx.fillStyle='#68BFE5';ctx.fillRect(x,y,w,h);unionJack(x,y,w/2,h/2);
+      const sx=X(.75),sy=Y(.36),sw=S*.36,sh=S*.44;ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(sx-sw/2,sy);ctx.lineTo(sx+sw/2,sy);ctx.lineTo(sx+sw/2,sy+sh*.6);ctx.quadraticCurveTo(sx+sw/2,sy+sh,sx,sy+sh);ctx.quadraticCurveTo(sx-sw/2,sy+sh,sx-sw/2,sy+sh*.6);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#CE1126';ctx.fillRect(sx-sw/2,sy,sw,sh*.22);ctx.fillRect(sx-sw*.06,sy+sh*.22,sw*.12,sh*.7);ctx.fillRect(sx-sw/2,sy+sh*.5,sw,sh*.1);
+      ctx.fillStyle='#FCD116';ocDot(sx,sy+sh*.11,sh*.07);break;}
+    case 'ws':ctx.fillStyle='#CE1126';ctx.fillRect(x,y,w,h);ctx.fillStyle='#002B7F';ctx.fillRect(x,y,w/2,h/2);ctx.fillStyle='#fff';
+      for(const[a,b,r]of[[.25,.09,.055],[.15,.22,.055],[.33,.20,.055],[.25,.40,.06],[.28,.29,.03]])ocStar(X(a),Y(b),S*r,5,.42);break;
+    case 'to':ctx.fillStyle='#C10000';ctx.fillRect(x,y,w,h);ctx.fillStyle='#fff';ctx.fillRect(x,y,w*.42,h*.5);
+      ctx.fillStyle='#C10000';ctx.fillRect(X(.21)-h*.07,Y(.06),h*.14,h*.38);ctx.fillRect(X(.21)-h*.19,Y(.25)-h*.07,h*.38,h*.14);break;
+  }
+  ctx.restore();}
+function drawFlagLand(c){const sh=c.parts?[c,...c.parts]:[c],vwz=vw/zoom,vhz=vh/zoom;   // суша країни = її прапор (як на мапі Кості)
+  if(!sh.some(e=>e.cx+e.rx+e.ry>cam.x&&e.cx-e.rx-e.ry<cam.x+vwz&&e.cy+e.rx+e.ry>cam.y&&e.cy-e.rx-e.ry<cam.y+vhz))return;
+  const f=c.fr||{cx:c.cx,cy:c.cy,w:c.rx*2,h:c.ry*2,rot:c.rot};
+  ctx.save();ctx.beginPath();for(const e of sh){const r=e.rot||0;ctx.moveTo(e.cx+e.rx*Math.cos(r),e.cy+e.rx*Math.sin(r));ctx.ellipse(e.cx,e.cy,e.rx,e.ry,r,0,Math.PI*2);}ctx.clip();
+  ctx.fillStyle=c.tint;ctx.fillRect(cam.x-60,cam.y-60,vwz+120,vhz+120);   // фон кольором прапора там, куди сам прапор не лягає
+  ctx.translate(f.cx,f.cy);if(f.rot)ctx.rotate(f.rot);paintFlag(c.id,-f.w/2,-f.h/2,f.w,f.h);
+  ctx.restore();}
+function drawPlankBridge(b){const L=Math.hypot(b.x2-b.x1,b.y2-b.y1),hw=b.w/2;
+  ctx.save();ctx.translate(b.x1,b.y1);ctx.rotate(Math.atan2(b.y2-b.y1,b.x2-b.x1));
+  ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(0,-hw+7,L,b.w);
+  ctx.fillStyle='#b07a45';ctx.fillRect(0,-hw,L,b.w);
+  ctx.strokeStyle='#7a4f27';ctx.lineWidth=2;ctx.beginPath();for(let s=6;s<L;s+=13){ctx.moveTo(s,-hw);ctx.lineTo(s,hw);}ctx.stroke();
+  ctx.fillStyle='#6b4423';ctx.fillRect(0,-hw-3,L,4);ctx.fillRect(0,hw-1,L,4);
+  for(let s=0;s<=L;s+=60){ctx.fillRect(s-3,-hw-5,6,8);ctx.fillRect(s-3,hw-3,6,8);}
+  ctx.restore();}
+function ocPad(x,y,rx,col){ctx.fillStyle=col||'#e8d59a';ctx.beginPath();ctx.ellipse(x,y+3,rx,rx*.36,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.18)';ctx.lineWidth=2;ctx.stroke();}
+function ocPalm(x,y,s=1){shadow(x,y,14*s);ctx.strokeStyle='#8a5a2b';ctx.lineWidth=6*s;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+8*s,y-26*s,x+3*s,y-52*s);ctx.stroke();
+  const tx=x+3*s,ty=y-52*s;ctx.fillStyle='#2f9a44';for(let i=0;i<6;i++){ctx.save();ctx.translate(tx,ty);ctx.rotate(-Math.PI/2+(i-2.5)*0.62);ctx.beginPath();ctx.ellipse(16*s,0,17*s,5*s,0.25,0,Math.PI*2);ctx.fill();ctx.restore();}
+  ctx.fillStyle='#6b4a2b';ocDot(tx-3*s,ty+4*s,3*s);ocDot(tx+4*s,ty+5*s,3*s);}
+function ocUluru(x,y){ctx.fillStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.ellipse(x,y+4,66,12,0,0,Math.PI*2);ctx.fill();
+  ctx.save();ctx.beginPath();ctx.moveTo(x-64,y+4);ctx.bezierCurveTo(x-60,y-30,x-40,y-44,x-10,y-46);ctx.bezierCurveTo(x+30,y-48,x+56,y-34,x+64,y+4);ctx.closePath();
+  ctx.fillStyle='#c4572a';ctx.fill();ctx.clip();
+  ctx.strokeStyle='rgba(110,35,12,.45)';ctx.lineWidth=2;for(let i=-4;i<=4;i++){ctx.beginPath();ctx.moveTo(x+i*13,y+4);ctx.quadraticCurveTo(x+i*14+3,y-18,x+i*11,y-50);ctx.stroke();}
+  ctx.fillStyle='rgba(255,200,150,.25)';ctx.beginPath();ctx.ellipse(x-14,y-36,26,6,-.1,0,Math.PI*2);ctx.fill();ctx.restore();}
+function ocKiwi(x,y,tsec){
+  ctx.fillStyle='#6f7f8f';ctx.beginPath();ctx.moveTo(x-52,y-4);ctx.lineTo(x-28,y-56);ctx.lineTo(x-4,y-4);ctx.closePath();ctx.fill();   // гора
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(x-36,y-39);ctx.lineTo(x-28,y-56);ctx.lineTo(x-20,y-39);ctx.closePath();ctx.fill();
+  shadow(x+8,y,18);const b=Math.sin(tsec*3);ctx.fillStyle='#7a5a3a';ctx.beginPath();ctx.ellipse(x+8,y-14+b,17,13,0,0,Math.PI*2);ctx.fill();ocDot(x+22,y-22+b,7);
+  ctx.strokeStyle='#d9c08a';ctx.lineWidth=2.4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x+28,y-21+b);ctx.lineTo(x+44,y-12+b);ctx.stroke();   // довгий дзьоб
+  ctx.strokeStyle='#d9a03a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+4,y-3);ctx.lineTo(x+2,y+3);ctx.moveTo(x+12,y-3);ctx.lineTo(x+14,y+3);ctx.stroke();
+  ctx.fillStyle='#000';ocDot(x+24,y-24+b,1.4);}
+function ocStiltHut(x,y){shadow(x,y,26);ctx.fillStyle='#6b4423';for(const dx of[-18,-6,6,18])ctx.fillRect(x+dx-2,y-22,4,24);
+  ctx.fillStyle='#a0703c';ctx.fillRect(x-24,y-26,48,6);ctx.fillStyle='#c79a5b';ctx.fillRect(x-18,y-46,36,20);ctx.fillStyle='#4a2f18';ctx.fillRect(x-4,y-40,8,14);
+  ctx.fillStyle='#d9b45a';ctx.beginPath();ctx.moveTo(x-28,y-44);ctx.lineTo(x,y-70);ctx.lineTo(x+28,y-44);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#a8843a';ctx.lineWidth=1.5;ctx.beginPath();for(let i=-2;i<=2;i++){ctx.moveTo(x+i*9,y-44);ctx.lineTo(x,y-68);}ctx.stroke();}
+function ocCanoe(x,y){ctx.fillStyle='#7a4a22';ctx.beginPath();ctx.moveTo(x-26,y-6);ctx.quadraticCurveTo(x,y+6,x+26,y-6);ctx.lineTo(x+20,y-2);ctx.quadraticCurveTo(x,y+2,x-20,y-2);ctx.closePath();ctx.fill();ctx.fillStyle='#5a3418';ctx.fillRect(x-20,y-7,40,2);}
+function ocVolcano(x,y,tsec){shadow(x,y,40);ctx.fillStyle='#6d5446';ctx.beginPath();ctx.moveTo(x-44,y+2);ctx.lineTo(x-12,y-50);ctx.lineTo(x+12,y-50);ctx.lineTo(x+44,y+2);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#e8501f';ctx.beginPath();ctx.moveTo(x-12,y-50);ctx.lineTo(x+12,y-50);ctx.lineTo(x+6,y-40);ctx.lineTo(x+2,y-30);ctx.lineTo(x-3,y-42);ctx.lineTo(x-8,y-38);ctx.closePath();ctx.fill();
+  for(let i=0;i<3;i++){const p=(tsec*.4+i/3)%1;ctx.fillStyle=`rgba(210,210,210,${.7*(1-p)})`;ocDot(x+Math.sin(p*5+i)*8,y-56-p*40,7+p*10);}}
+function ocKanak(x,y){shadow(x,y,22);ctx.fillStyle='#b98a52';ctx.fillRect(x-16,y-22,32,24);ctx.fillStyle='#4a2f18';ctx.fillRect(x-5,y-16,10,18);
+  ctx.fillStyle='#8a6a3a';ctx.beginPath();ctx.moveTo(x-22,y-20);ctx.lineTo(x,y-72);ctx.lineTo(x+22,y-20);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#5a4320';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-72);ctx.lineTo(x,y-86);ctx.stroke();ctx.fillStyle='#5a4320';ocDot(x,y-87,3);}
+function ocFale(x,y){shadow(x,y,30);ctx.fillStyle='#6b4423';for(const dx of[-24,-8,8,24])ctx.fillRect(x+dx-2,y-28,4,30);
+  ctx.fillStyle='#c9a24a';ctx.beginPath();ctx.ellipse(x,y-30,36,18,0,Math.PI,0);ctx.closePath();ctx.fill();ctx.fillStyle='#a8843a';ctx.fillRect(x-36,y-31,72,4);}
+function ocPalace(x,y){shadow(x,y,30);ctx.fillStyle='#f4f1ea';ctx.fillRect(x-28,y-30,56,32);ctx.fillStyle='#C10000';ctx.beginPath();ctx.moveTo(x-34,y-28);ctx.lineTo(x,y-50);ctx.lineTo(x+34,y-28);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#7ec8ff';ctx.fillRect(x-20,y-22,10,10);ctx.fillRect(x+10,y-22,10,10);ctx.fillStyle='#6b4423';ctx.fillRect(x-5,y-16,10,18);
+  ctx.font='16px serif';ctx.textAlign='center';ctx.fillText('👑',x,y-52);}
+function ocLandmark(c,x,y,tsec){
+  switch(c.id){
+    case 'au':ocPad(x,y,82,'#d98b52');ocUluru(x,y);break;
+    case 'nz':ocPad(x,y,54);ocKiwi(x,y,tsec);break;
+    case 'pg':ocPad(x,y,44);ocStiltHut(x,y);break;
+    case 'sb':ocPad(x,y,50);ocPalm(x-16,y);ocCanoe(x+22,y+8);break;
+    case 'vu':ocPad(x,y,52,'#b9a48a');ocVolcano(x,y,tsec);break;
+    case 'nc':ocPad(x,y,40);ocKanak(x,y);break;
+    case 'fj':ocPad(x,y,50);ocPalm(x-18,y-2,.9);ocPalm(x+18,y+4);break;
+    case 'ws':ocPad(x,y,46);ocFale(x,y);break;
+    case 'to':ocPad(x,y,46);ocPalace(x,y);break;
+  }}
+function drawOcDeco(d,tsec){const x=d.x,y=d.y;
+  if(d.kind==='opera'){shadow(x,y,46);ctx.fillStyle='#d8c9a8';ctx.fillRect(x-48,y-8,96,12);
+    const shell=(sx,h,w)=>{ctx.fillStyle='#fbfbf7';ctx.beginPath();ctx.moveTo(sx,y-8);ctx.quadraticCurveTo(sx+w*.15,y-8-h,sx+w,y-8-h*.95);ctx.quadraticCurveTo(sx+w*.6,y-8-h*.4,sx+w*.75,y-8);ctx.closePath();ctx.fill();ctx.strokeStyle='#c9c4b5';ctx.lineWidth=1.2;ctx.stroke();};
+    shell(x-44,34,30);shell(x-22,46,34);shell(x+4,40,30);shell(x+24,28,22);
+    ctx.font='700 11px Rubik, sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeStyle='#0f1c2a';ctx.strokeText('Сіднейська опера 🎭',x,y+20);ctx.fillStyle='#fff';ctx.fillText('Сіднейська опера 🎭',x,y+20);}
+  else if(d.kind==='koala'){shadow(x,y,26);ctx.fillStyle='#8a6a4a';ctx.fillRect(x-4,y-56,8,58);
+    ctx.fillStyle='#7fa58a';for(const[a,b,r]of[[-16,-62,18],[14,-64,18],[0,-80,20],[-4,-56,14]])ocDot(x+a,y+b,r);   // евкаліпт
+    const by=y-30+Math.sin(tsec*1.2)*1.5;ctx.fillStyle='#9a9a9a';ctx.beginPath();ctx.ellipse(x+6,by,9,12,0,0,Math.PI*2);ctx.fill();
+    ocDot(x+6,by-14,8);ocDot(x-1,by-20,5);ocDot(x+13,by-20,5);ctx.fillStyle='#dcdcdc';ocDot(x-1,by-20,2.5);ocDot(x+13,by-20,2.5);
+    ctx.fillStyle='#333';ctx.beginPath();ctx.ellipse(x+6,by-12,2.5,3.5,0,0,Math.PI*2);ctx.fill();ocDot(x+3,by-16,1.2);ocDot(x+9,by-16,1.2);}}
+function drawRoo(r,tsec){const hop=Math.abs(Math.sin(tsec*4.2+r.ph))*12;shadow(r.x,r.y,13);
+  ctx.save();ctx.translate(r.x,r.y-hop);if(r.vx<0)ctx.scale(-1,1);ctx.fillStyle='#b5713a';
+  ctx.beginPath();ctx.moveTo(-6,-6);ctx.quadraticCurveTo(-22,-2,-26,4);ctx.lineTo(-23,6);ctx.quadraticCurveTo(-16,2,-4,-1);ctx.closePath();ctx.fill();   // хвіст
+  ctx.fillRect(-4,-4,14,4);   // лапи
+  ctx.beginPath();ctx.ellipse(0,-16,10,14,-0.35,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(7,-33,6,5,0.3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(4,-41,2,5,-0.2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(8,-41,2,5,0.2,0,Math.PI*2);ctx.fill();   // вуха
+  ctx.fillRect(5,-22,6,2.5);ctx.fillStyle='#e0b07a';ctx.beginPath();ctx.ellipse(3,-14,5,9,-0.35,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#000';ocDot(8,-34,1.2);ocDot(12.5,-32,1.1);ctx.restore();
+  if(r.found){ctx.font='14px serif';ctx.textAlign='center';ctx.fillText('❤️',r.x,r.y-hop-50);}}
 function drawLandmark(c,tsec){const x=c.cx,y=c.cy;
   if(EUR.id==='an'){antScenery(c,x,y,tsec);return;}
+  if(EUR.id==='oc'){ocLandmark(c,x,y,tsec);return;}
   switch(c.id){
     case 'fr':euEiffel(x,y);break;
     case 'it':euColosseum(x,y);break;
@@ -1567,8 +1743,9 @@ function euStatue(x,y){shadow(x,y,18);
 function drawEuropeMini(){
   mm.clearRect(0,0,mmC.width,mmC.height);mm.fillStyle='#1b6fa8';mm.fillRect(0,0,mmC.width,mmC.height);
   const kx=mmC.width/EUR.w,ky=mmC.height/EUR.h;
-  for(const b of BRIDGES){mm.fillStyle='#5f8f4a';mm.beginPath();mm.ellipse(b.cx*kx,b.cy*ky,b.rx*kx,b.ry*ky,0,0,Math.PI*2);mm.fill();}
-  for(const c of COUNTRIES){mm.fillStyle=st.euSeen[c.id]?'#9be070':'#5f8f4a';mm.beginPath();mm.ellipse(c.cx*kx,c.cy*ky,c.rx*kx,c.ry*ky,0,0,Math.PI*2);mm.fill();}
+  for(const b of BRIDGES){if(b.x1!=null){mm.strokeStyle='#c8955a';mm.lineWidth=2;mm.beginPath();mm.moveTo(b.x1*kx,b.y1*ky);mm.lineTo(b.x2*kx,b.y2*ky);mm.stroke();continue;}
+    mm.fillStyle='#5f8f4a';mm.beginPath();mm.ellipse(b.cx*kx,b.cy*ky,b.rx*kx,b.ry*ky,0,0,Math.PI*2);mm.fill();}
+  for(const c of COUNTRIES){mm.fillStyle=st.euSeen[c.id]?'#9be070':'#5f8f4a';for(const e of(c.parts?[c,...c.parts]:[c])){mm.beginPath();mm.ellipse(e.cx*kx,e.cy*ky,e.rx*kx,e.ry*ky,e.rot||0,0,Math.PI*2);mm.fill();}}
   mm.fillStyle='#e5443b';mm.fillRect(player.x*kx-2,player.y*ky-2,4,4);
 }
 // =============================================================================
@@ -1786,6 +1963,7 @@ function tapWorld(clientX,clientY){
       if(c.translate){openTranslate(c);player.mtx=player.mty=null;return;}
       if(c.plane){openPlane(c);player.mtx=player.mty=null;return;}
       if(c.match){startMatch(c);player.mtx=player.mty=null;return;}
+      if(c.roos&&!st.saDone[c.id]){toast('Спершу знайди всіх кенгуру 🦘 '+st.roos+'/'+EUR.roos.length+' — просто підійди до них',3);player.mtx=player.mty=null;return;}
       if(c.q){openQuestion(c);player.mtx=player.mty=null;return;}
       openInside(c);player.mtx=player.mty=null;return;}}
     player.mtx=wx;player.mty=wy;marker.x=wx;marker.y=wy;marker.kind='go';marker.t=0;freeCam=false;return;
@@ -1832,6 +2010,7 @@ $('spaceBtn').addEventListener('click',startSpace);
 $('saBtn').addEventListener('click',startSA);
 $('naBtn').addEventListener('click',startNA);
 $('anBtn').addEventListener('click',startAntarctica);
+$('ocBtn').addEventListener('click',startOceania);
 $('winBtn').addEventListener('click',()=>{$('win').hidden=true;st.running=true;st.won=false;st.over=false;});
 $('deadBtn').addEventListener('click',startGame);
 $('sailBtn').addEventListener('click',startSea);
